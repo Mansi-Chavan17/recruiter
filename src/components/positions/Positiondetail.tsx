@@ -93,6 +93,11 @@
 
 // export default PositionDetail;
 
+
+
+
+
+
 import { useState, useEffect } from "react";
 import Header from "../Header";
 import DetailHeader from "../positions/Detailheader";

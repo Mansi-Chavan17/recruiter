@@ -44,5 +44,7 @@ SEND_WHATSAPP_MESSAGE: "/api/whatsapp/send",
   FETCH_WHATSAPP_CONVERSATIONS: "/api/whatsapp-reply/manager/conversations",
   
 
+//New Endpoints for Recruiter Pipeline Dashboard
+FETCH_RECRUITER_PIPELINE_DASHBOARD: "/api/recruiter-dashboard/pipeline",
 };
 

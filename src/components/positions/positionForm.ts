@@ -104,7 +104,7 @@ export const buildCreatePayload = (form: PositionForm, recruiter: string) => ({
 export const STATUS_OPTIONS = [
   "Open",
   "On Hold",
-  "Close by LHR",
+  "Closed by LHR",
   "Lost",
   "Candidate identified",
 ];

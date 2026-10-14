@@ -5342,6 +5342,10 @@
 
 
 
+
+
+
+
 import { useState, useEffect, useRef } from "react";
 import Header from "../components/Header";
 import { useNavigate, useParams } from "react-router-dom";
@@ -5360,6 +5364,7 @@ import AsyncSelect from "react-select/async";
 import CreatePositionWizard from "../components/positions/CreatePositionWizard";
 import PositionDetail from "../components/positions/Positiondetail";
 import SharePositionModal from "../components/positions/Sharepositionmodal";
+import { STATUS_OPTIONS } from "../components/positions/positionForm";
 
 /* ------------------------------------------------------------------ */
 /* Shared helpers                                                      */
@@ -5980,6 +5985,16 @@ const PositionManagement = () => {
 
   /* -------------------- data -------------------- */
 
+  const STATUS_FIXES: Record<string, string> = {
+  "close by lhr": "Closed by LHR",
+  active: "Open",
+};
+
+const normalizeStatus = (status: any) => {
+  const value = String(status || "").trim();
+  return STATUS_FIXES[value.toLowerCase()] || value || "Open";
+};
+
   const transformPosition = (position: any) => {
     const [submitted, targeted] = String(position.progress || "0/0")
       .split("/")
@@ -5998,7 +6013,7 @@ const PositionManagement = () => {
       priority: position.priority || "Medium",
       experience: position.experience ? `${position.experience} years` : "N/A",
       workplaceType: position.mode || "N/A",
-      status: position.status || "Active",
+      status: normalizeStatus(position.status),
       ctcBudgetNumeric: position.ctc || 0,
       city: position.location || "N/A",
       experienceYears: position.experience || "N/A",
@@ -6066,7 +6081,7 @@ const PositionManagement = () => {
           function: position.function || "",
           role: position.role || "",
           workplaceType: position.workplaceType || "",
-          status: position.status || "Open",
+          status: normalizeStatus(position.status),
           education: position.education || "",
           roleDescription: position.roleDescription || "",
           preferredIndustry: position.preferredIndustry || [],
@@ -6126,13 +6141,7 @@ const PositionManagement = () => {
 
   /* -------------------- derived -------------------- */
 
-  const KNOWN_STATUSES = [
-    "Open",
-    "On Hold",
-    "Close by LHR",
-    "Lost",
-    "Candidate identified",
-  ];
+  const KNOWN_STATUSES = STATUS_OPTIONS;
 
   // Keep the known order, then append any status the API returns that we
   // don't know about yet, so a new backend value never disappears from the UI.
@@ -6728,6 +6737,11 @@ const PositionManagement = () => {
         open={showCreatePosition}
         onClose={() => setShowCreatePosition(false)}
         onCreate={handleCreatePosition}
+        onClientCreated={(option: any) =>
+    setClientOptions((prev) =>
+      prev.some((c) => c.value === option.value) ? prev : [...prev, option]
+    )
+  }
         recruiter={recruiter}
         clientOptions={clientOptions}
         functionOptions={functionOptions}

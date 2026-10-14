@@ -18,16 +18,16 @@ export const educationOptions = [
   value: item.toLowerCase(),
 }));
 
-export const statusOptions = [
-  "Open",
-  "On Hold",
-  "Close by LHR",
-  "Lost",
-  "Candidate identified",
-].map((item) => ({
-  label: item,
-  value: item.toLowerCase(),
-}));
+// export const statusOptions = [
+//   "Open",
+//   "On Hold",
+//   "Close by LHR",
+//   "Lost",
+//   "Candidate identified",
+// ].map((item) => ({
+//   label: item,
+//   value: item.toLowerCase(),
+// }));
 
 export const functionOptions = [
             "Sales B2B",
