@@ -57,7 +57,13 @@ FETCH_CALLING_TRACKER_STATUSES: "/api/calling-tracker/statuses",
 EXPORT_CALLING_TRACKER: "/api/calling-tracker/export",
 
 
-
+//New Endpoints for BD
+FETCH_BD_MEETINGS: "/api/bd/meetings",
+CREATE_BD_MEETING: "/api/bd/meetings",
+FETCH_SINGLE_BD_MEETING: (id: string) => `/api/bd/meetings/${id}`,
+UPDATE_BD_MEETING: (id: string) => `/api/bd/meetings/${id}`,
+DELETE_BD_MEETING: (id: string) => `/api/bd/meetings/${id}`,
+FETCH_BD_MEETING_OPTIONS: "/api/bd/meetings/meta/options",
 
 };
 
