@@ -46,5 +46,18 @@ SEND_WHATSAPP_MESSAGE: "/api/whatsapp/send",
 
 //New Endpoints for Recruiter Pipeline Dashboard
 FETCH_RECRUITER_PIPELINE_DASHBOARD: "/api/recruiter-dashboard/pipeline",
+
+//New Endpoints for Calling Tracker
+FETCH_CALLING_TRACKER: "/api/calling-tracker",
+ADD_CALLING_TRACKER_CANDIDATE: "/api/calling-tracker",
+UPDATE_CALLING_TRACKER_CANDIDATE: (callingId: string) => `/api/calling-tracker/${callingId}`,
+UPDATE_CALLING_TRACKER_STATUS: (callingId: string) => `/api/calling-tracker/${callingId}/status`,
+FETCH_CALLING_TRACKER_POSITIONS: "/api/calling-tracker/positions",
+FETCH_CALLING_TRACKER_STATUSES: "/api/calling-tracker/statuses",
+EXPORT_CALLING_TRACKER: "/api/calling-tracker/export",
+
+
+
+
 };
 
