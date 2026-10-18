@@ -7,8 +7,31 @@ import {
   CheckCircle,
   XCircle,
   Clock,
+  X,
 } from "lucide-react";
 import Header from "../components/Header";
+import FilterSelect from "../components/FilterSelect";
+
+/* UI-only constants */
+const UPDATE_OPTIONS = [
+  { value: "no response", label: "No Response" },
+  { value: "yes", label: "Yes" },
+  { value: "no", label: "No" },
+];
+
+const GROUP_BY_OPTIONS = [
+  { value: "none", label: "No Grouping" },
+  { value: "client", label: "Group by Client" },
+  { value: "status", label: "Group by Status" },
+];
+
+const updatePillClass = (value) =>
+  value === "yes"
+    ? "bg-green-50 text-green-700 ring-green-200"
+    : value === "no"
+    ? "bg-red-50 text-red-700 ring-red-200"
+    : "bg-gray-50 text-gray-600 ring-gray-200";
+
 const OffersTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [positionFilter, setPositionFilter] = useState("");
@@ -151,278 +174,216 @@ const OffersTab = () => {
     return { "All Offers": filteredOffers };
   }, [filteredOffers, groupBy]);
 
+  /* UI-only: dropdown options built from the offers already on the page */
+  const toUniqueOptions = (values, allLabel) => [
+    { value: "", label: allLabel },
+    ...Array.from(new Set(values.filter(Boolean)))
+      .sort((a, b) => a.localeCompare(b))
+      .map((v) => ({ value: v, label: v })),
+  ];
+  const positionOptions = toUniqueOptions(offers.map((o) => o.positionName), "All positions");
+  const clientOptions = toUniqueOptions(offers.map((o) => o.clientName), "All clients");
+
   const renderUpdateSelect = (offer, field, label) => (
-    <div className="flex items-center justify-center space-x-2">
+    <div className="flex items-center justify-center gap-1.5">
       {getUpdateIcon(offer[field])}
-      <select
+      <FilterSelect
+        ariaLabel={`${label} days update for ${offer.candidateName}`}
+        className="inline-block"
+        chevronClassName="h-3 w-3"
         value={offer[field]}
-        onChange={(e) => updateOfferField(offer.id, field, e.target.value)}
-        className="text-xs border rounded px-1 py-0.5 min-w-0"
-      >
-        <option value="no response">No Response</option>
-        <option value="yes">Yes</option>
-        <option value="no">No</option>
-      </select>
+        onChange={(v) => updateOfferField(offer.id, field, v)}
+        options={UPDATE_OPTIONS}
+        buttonClassName={`inline-flex items-center gap-1 whitespace-nowrap rounded-full pl-2 pr-1.5 py-0.5 text-[11px] font-medium ring-1 ring-inset transition hover:brightness-95 ${updatePillClass(
+          offer[field]
+        )}`}
+      />
     </div>
   );
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50 ">
+      <div className="min-h-screen bg-gray-50">
         <Header />
-        <div className="p-6 space-y-6 max-w-7xl mx-auto">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="max-w-7xl mx-auto p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                {/* <Users className="w-6 h-6 mr-2" /> */}
-                Offers Management
-              </h2>
+        <div className="md:ml-16">
+          <div className="p-4 md:p-6 space-y-6 max-w-7xl mx-auto">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+              <div className="p-5 md:p-6">
+                <h2 className="text-2xl font-semibold text-gray-900 mb-5">
+                  Offers Management
+                </h2>
 
-              {/* Search and Filter Bar */}
-              <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  {/* Search Bar */}
-                  <div className="relative">
-                    <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="text"
-                      placeholder="Search offers..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
+                {/* Search and Filter Bar */}
+                <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-4 mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                    {/* Search Bar */}
+                    <div className="relative">
+                      <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                      <input
+                        type="text"
+                        placeholder="Search offers..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full h-10 pl-9 pr-9 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                      />
+                      {searchTerm && (
+                        <button
+                          type="button"
+                          onClick={() => setSearchTerm("")}
+                          aria-label="Clear search"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 grid place-items-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
 
-                  {/* Position Filter */}
-                  <div>
-                    <input
-                      type="text"
-                      placeholder="Filter by position..."
+                    {/* Position Filter */}
+                    <FilterSelect
+                      searchable
+                      searchPlaceholder="Search positions..."
+                      ariaLabel="Filter by position"
+                      className="w-full"
                       value={positionFilter}
-                      onChange={(e) => setPositionFilter(e.target.value)}
-                      className="px-4 py-2 w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={setPositionFilter}
+                      options={positionOptions}
                     />
-                  </div>
 
-                  {/* Client Filter */}
-                  <div>
-                    <input
-                      type="text"
-                      placeholder="Filter by client..."
+                    {/* Client Filter */}
+                    <FilterSelect
+                      searchable
+                      searchPlaceholder="Search clients..."
+                      ariaLabel="Filter by client"
+                      className="w-full"
                       value={clientFilter}
-                      onChange={(e) => setClientFilter(e.target.value)}
-                      className="px-4 py-2 w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={setClientFilter}
+                      options={clientOptions}
                     />
-                  </div>
 
-                  {/* Group By */}
-                  <div>
-                    <select
+                    {/* Group By */}
+                    <FilterSelect
+                      ariaLabel="Group by"
+                      className="w-full"
                       value={groupBy}
-                      onChange={(e) => setGroupBy(e.target.value)}
-                      className="px-4 py-2 w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="none">No Grouping</option>
-                      <option value="client">Group by Client</option>
-                      <option value="status">Group by Status</option>
-                    </select>
+                      onChange={setGroupBy}
+                      options={GROUP_BY_OPTIONS}
+                    />
                   </div>
                 </div>
-              </div>
 
-              {/* Offers Table */}
-              <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                {Object.entries(groupedOffers).map(
-                  ([groupName, groupOffers]) => (
-                    <div key={groupName} className="mb-6 last:mb-0">
+                {/* Offers Table */}
+                <div className="rounded-xl border border-gray-200 overflow-hidden">
+                  {Object.entries(groupedOffers).map(([groupName, groupOffers]) => (
+                    <div key={groupName} className="border-b border-gray-200 last:border-b-0">
                       {groupBy !== "none" && (
-                        <div className="bg-gray-100 px-4 py-2 border-b">
-                          <h3 className="font-semibold text-gray-800">
-                            {groupName} ({groupOffers.length})
-                          </h3>
+                        <div className="flex items-center gap-2 bg-gray-50 px-4 py-2.5 border-b border-gray-200">
+                          <h3 className="text-sm font-semibold text-gray-800">{groupName}</h3>
+                          <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-gray-600 ring-1 ring-inset ring-gray-200">
+                            {groupOffers.length}
+                          </span>
                         </div>
                       )}
 
-                      <div className="w-full">
+                      <div className="w-full overflow-x-auto">
                         <table className="w-full">
                           <thead className="bg-gray-50">
                             <tr>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Position
-                              </th>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Candidate
-                              </th>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Client
-                              </th>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Offer Date
-                              </th>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Joining Date
-                              </th>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Status
-                              </th>
-                              <th className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                0-10d
-                              </th>
-                              <th className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                20-30d
-                              </th>
-                              <th className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                30-40d
-                              </th>
-                              <th className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                40-50d
-                              </th>
-                              <th className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                50-60d
-                              </th>
-                              <th className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                60-70d
-                              </th>
+                              {["Position", "Candidate", "Client", "Offer Date", "Joining Date", "Status"].map((h) => (
+                                <th
+                                  key={h}
+                                  className="px-4 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                                >
+                                  {h}
+                                </th>
+                              ))}
+                              {["0-10d", "20-30d", "30-40d", "40-50d", "50-60d", "60-70d"].map((h) => (
+                                <th
+                                  key={h}
+                                  className="px-2 py-3 text-center text-[11px] font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                                >
+                                  {h}
+                                </th>
+                              ))}
                             </tr>
                           </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
+                          <tbody className="bg-white divide-y divide-gray-100">
                             {groupOffers.map((offer) => (
-                              <tr key={offer.id} className="hover:bg-gray-50">
-                                <td className="px-4 py-4 whitespace-nowrap">
-                                  <div className="text-sm font-medium text-gray-900">
-                                    {offer.positionName}
-                                  </div>
+                              <tr key={offer.id} className="hover:bg-gray-50/70">
+                                <td className="px-4 py-3.5 whitespace-nowrap">
+                                  <div className="text-sm font-medium text-gray-900">{offer.positionName}</div>
                                 </td>
-                                <td className="px-4 py-4 whitespace-nowrap">
-                                  <div className="text-sm text-gray-900">
-                                    {offer.candidateName}
-                                  </div>
+                                <td className="px-4 py-3.5 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900">{offer.candidateName}</div>
                                 </td>
-                                <td className="px-4 py-4 whitespace-nowrap">
-                                  <div className="text-sm text-gray-900">
-                                    {offer.clientName}
-                                  </div>
+                                <td className="px-4 py-3.5 whitespace-nowrap">
+                                  <div className="text-sm text-gray-700">{offer.clientName}</div>
                                 </td>
-                                <td className="px-4 py-4 whitespace-nowrap">
-                                  <div className="text-sm text-gray-900 flex items-center">
-                                    <Calendar className="w-4 h-4 mr-1 text-gray-400" />
+                                <td className="px-4 py-3.5 whitespace-nowrap">
+                                  <div className="text-sm text-gray-700 flex items-center">
+                                    <Calendar className="w-4 h-4 mr-1.5 text-gray-400" />
                                     {offer.offerReleasedDate}
                                   </div>
                                 </td>
-                                <td className="px-4 py-4 whitespace-nowrap">
-                                  <div className="text-sm text-gray-900 flex items-center">
-                                    <Calendar className="w-4 h-4 mr-1 text-gray-400" />
+                                <td className="px-4 py-3.5 whitespace-nowrap">
+                                  <div className="text-sm text-gray-700 flex items-center">
+                                    <Calendar className="w-4 h-4 mr-1.5 text-gray-400" />
                                     {offer.joiningDate}
                                   </div>
                                 </td>
-                                <td className="px-4 py-4 whitespace-nowrap">
+                                <td className="px-4 py-3.5 whitespace-nowrap">
                                   <span
-                                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+                                    className={`inline-flex px-2.5 py-0.5 text-xs font-semibold rounded-full ${getStatusColor(
                                       offer.status
                                     )}`}
                                   >
                                     {offer.status}
                                   </span>
                                 </td>
-                                <td className="px-2 py-4 text-center">
-                                  {renderUpdateSelect(
-                                    offer,
-                                    "update0to10",
-                                    "0-10"
-                                  )}
-                                </td>
-                                <td className="px-2 py-4 text-center">
-                                  {renderUpdateSelect(
-                                    offer,
-                                    "update20to30",
-                                    "20-30"
-                                  )}
-                                </td>
-                                <td className="px-2 py-4 text-center">
-                                  {renderUpdateSelect(
-                                    offer,
-                                    "update30to40",
-                                    "30-40"
-                                  )}
-                                </td>
-                                <td className="px-2 py-4 text-center">
-                                  {renderUpdateSelect(
-                                    offer,
-                                    "update40to50",
-                                    "40-50"
-                                  )}
-                                </td>
-                                <td className="px-2 py-4 text-center">
-                                  {renderUpdateSelect(
-                                    offer,
-                                    "update50to60",
-                                    "50-60"
-                                  )}
-                                </td>
-                                <td className="px-2 py-4 text-center">
-                                  {renderUpdateSelect(
-                                    offer,
-                                    "update60to70",
-                                    "60-70"
-                                  )}
-                                </td>
+                                <td className="px-2 py-3.5 text-center">{renderUpdateSelect(offer, "update0to10", "0-10")}</td>
+                                <td className="px-2 py-3.5 text-center">{renderUpdateSelect(offer, "update20to30", "20-30")}</td>
+                                <td className="px-2 py-3.5 text-center">{renderUpdateSelect(offer, "update30to40", "30-40")}</td>
+                                <td className="px-2 py-3.5 text-center">{renderUpdateSelect(offer, "update40to50", "40-50")}</td>
+                                <td className="px-2 py-3.5 text-center">{renderUpdateSelect(offer, "update50to60", "50-60")}</td>
+                                <td className="px-2 py-3.5 text-center">{renderUpdateSelect(offer, "update60to70", "60-70")}</td>
                               </tr>
                             ))}
                           </tbody>
                         </table>
                       </div>
                     </div>
-                  )
-                )}
+                  ))}
 
-                {filteredOffers.length === 0 && (
-                  <div className="text-center py-12">
-                    <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500">
-                      No offers found matching your criteria.
-                    </p>
-                  </div>
-                )}
-              </div>
+                  {filteredOffers.length === 0 && (
+                    <div className="text-center py-12">
+                      <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" strokeWidth={1.5} />
+                      <p className="text-gray-500 text-sm">No offers found matching your criteria.</p>
+                    </div>
+                  )}
+                </div>
 
-              {/* Summary Stats */}
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-white rounded-lg shadow-sm p-4">
-                  <div className="text-sm font-medium text-gray-500">
-                    Total Offers
+                {/* Summary Stats */}
+                <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="rounded-xl border border-gray-200 bg-white p-4">
+                    <div className="text-xs font-medium text-gray-500">Total Offers</div>
+                    <div className="mt-1 text-2xl font-bold text-gray-900">{filteredOffers.length}</div>
                   </div>
-                  <div className="text-2xl font-bold text-gray-900">
-                    {filteredOffers.length}
+                  <div className="rounded-xl border border-gray-200 bg-white p-4">
+                    <div className="text-xs font-medium text-gray-500">Pending</div>
+                    <div className="mt-1 text-2xl font-bold text-yellow-600">
+                      {filteredOffers.filter((o) => o.status === "Pending").length}
+                    </div>
                   </div>
-                </div>
-                <div className="bg-white rounded-lg shadow-sm p-4">
-                  <div className="text-sm font-medium text-gray-500">
-                    Pending
+                  <div className="rounded-xl border border-gray-200 bg-white p-4">
+                    <div className="text-xs font-medium text-gray-500">Accepted</div>
+                    <div className="mt-1 text-2xl font-bold text-green-600">
+                      {filteredOffers.filter((o) => o.status === "Accepted").length}
+                    </div>
                   </div>
-                  <div className="text-2xl font-bold text-yellow-600">
-                    {
-                      filteredOffers.filter((o) => o.status === "Pending")
-                        .length
-                    }
-                  </div>
-                </div>
-                <div className="bg-white rounded-lg shadow-sm p-4">
-                  <div className="text-sm font-medium text-gray-500">
-                    Accepted
-                  </div>
-                  <div className="text-2xl font-bold text-green-600">
-                    {
-                      filteredOffers.filter((o) => o.status === "Accepted")
-                        .length
-                    }
-                  </div>
-                </div>
-                <div className="bg-white rounded-lg shadow-sm p-4">
-                  <div className="text-sm font-medium text-gray-500">
-                    Joined
-                  </div>
-                  <div className="text-2xl font-bold text-blue-600">
-                    {filteredOffers.filter((o) => o.status === "Joined").length}
+                  <div className="rounded-xl border border-gray-200 bg-white p-4">
+                    <div className="text-xs font-medium text-gray-500">Joined</div>
+                    <div className="mt-1 text-2xl font-bold text-blue-600">
+                      {filteredOffers.filter((o) => o.status === "Joined").length}
+                    </div>
                   </div>
                 </div>
               </div>

@@ -1376,11 +1376,11 @@
 
 
 
-
 import { useState, useMemo, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import AddClientModal from "../components/clients/AddClientModal";
+import FilterSelect from "../components/FilterSelect";
 import { crmService } from "../services/crmService";
 import type {
   Client,
@@ -1747,7 +1747,7 @@ function ClientDetails() {
             placeholder="Search clients by name or industry..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 min-w-[300px] rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+            className="flex-1 min-w-[300px] h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
           />
         </div>
       </div>
@@ -1928,17 +1928,33 @@ function SubmissionSheet() {
             placeholder="Search candidate or position..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 min-w-[200px] rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+            className="flex-1 min-w-[200px] h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
           />
-          <select value={filterClient} onChange={(e) => setFilterClient(e.target.value)} className="rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500">
-            {clients.map((c) => <option key={c} value={c}>{c === "All" ? "All Clients" : c}</option>)}
-          </select>
-          <select value={filterApproval} onChange={(e) => setFilterApproval(e.target.value)} className="rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500">
-            {approvalStatuses.map((a) => <option key={a} value={a}>{a === "All" ? "All Statuses" : a}</option>)}
-          </select>
-          <select value={filterRecruiter} onChange={(e) => setFilterRecruiter(e.target.value)} className="rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500">
-            {recruiters.map((r) => <option key={r} value={r}>{r === "All" ? "All Recruiters" : r}</option>)}
-          </select>
+          <FilterSelect
+            searchable
+            searchPlaceholder="Search clients..."
+            ariaLabel="Filter by client"
+            className="w-full sm:w-48"
+            value={filterClient}
+            onChange={setFilterClient}
+            options={clients.map((c) => ({ value: c, label: c === "All" ? "All Clients" : c }))}
+          />
+          <FilterSelect
+            ariaLabel="Filter by approval status"
+            className="w-full sm:w-48"
+            value={filterApproval}
+            onChange={setFilterApproval}
+            options={approvalStatuses.map((a) => ({ value: a, label: a === "All" ? "All Statuses" : a }))}
+          />
+          <FilterSelect
+            searchable
+            searchPlaceholder="Search recruiters..."
+            ariaLabel="Filter by recruiter"
+            className="w-full sm:w-48"
+            value={filterRecruiter}
+            onChange={setFilterRecruiter}
+            options={recruiters.map((r) => ({ value: r, label: r === "All" ? "All Recruiters" : r }))}
+          />
         </div>
       </div>
 
@@ -2019,7 +2035,7 @@ function SubmissionSheet() {
                     <input
                       type="text" value={newSub.candidateName}
                       onChange={(e) => setNewSub((p) => ({ ...p, candidateName: e.target.value }))}
-                      className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                      className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
                       placeholder="e.g. Arjun Reddy"
                     />
                   </div>
@@ -2028,38 +2044,46 @@ function SubmissionSheet() {
                     <input
                       type="text" value={newSub.position}
                       onChange={(e) => setNewSub((p) => ({ ...p, position: e.target.value }))}
-                      className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                      className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
                       placeholder="e.g. VP Engineering"
                     />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">Client *</label>
-                    <select
+                    <FilterSelect
+                      searchable
+                      searchPlaceholder="Search clients..."
+                      ariaLabel="Client"
+                      className="w-full"
                       value={newSub.client}
-                      onChange={(e) => setNewSub((p) => ({ ...p, client: e.target.value }))}
-                      className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
-                    >
-                      <option value="">Select Client...</option>
-                      {allClients.map((c) => <option key={c} value={c}>{c}</option>)}
-                    </select>
+                      onChange={(v) => setNewSub((p) => ({ ...p, client: v }))}
+                      options={[
+                        { value: "", label: "Select Client..." },
+                        ...allClients.map((c) => ({ value: c, label: c })),
+                      ]}
+                    />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">Submitted By *</label>
-                    <select
+                    <FilterSelect
+                      searchable
+                      searchPlaceholder="Search recruiters..."
+                      ariaLabel="Submitted by"
+                      className="w-full"
                       value={newSub.submittedBy}
-                      onChange={(e) => setNewSub((p) => ({ ...p, submittedBy: e.target.value }))}
-                      className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
-                    >
-                      <option value="">Select Recruiter...</option>
-                      {allRecruiters.map((r) => <option key={r} value={r}>{r}</option>)}
-                    </select>
+                      onChange={(v) => setNewSub((p) => ({ ...p, submittedBy: v }))}
+                      options={[
+                        { value: "", label: "Select Recruiter..." },
+                        ...allRecruiters.map((r) => ({ value: r, label: r })),
+                      ]}
+                    />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">Submission Date</label>
                     <input
                       type="date" value={newSub.submissionDate}
                       onChange={(e) => setNewSub((p) => ({ ...p, submissionDate: e.target.value }))}
-                      className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                      className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                   </div>
                 </div>
@@ -2074,49 +2098,57 @@ function SubmissionSheet() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">Approval Status</label>
-                    <select
+                    <FilterSelect
+                      ariaLabel="Approval status"
+                      className="w-full"
                       value={newSub.approvalStatus}
-                      onChange={(e) => setNewSub((p) => ({ ...p, approvalStatus: e.target.value as "Pending" | "Approved" | "Rejected" }))}
-                      className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
-                    >
-                      <option>Pending</option><option>Approved</option><option>Rejected</option>
-                    </select>
+                      onChange={(v) => setNewSub((p) => ({ ...p, approvalStatus: v as "Pending" | "Approved" | "Rejected" }))}
+                      options={[
+                        { value: "Pending", label: "Pending" },
+                        { value: "Approved", label: "Approved" },
+                        { value: "Rejected", label: "Rejected" },
+                      ]}
+                    />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">Approved By</label>
-                    <select
+                    <FilterSelect
+                      searchable
+                      searchPlaceholder="Search approvers..."
+                      ariaLabel="Approved by"
+                      className="w-full"
                       value={newSub.approvedBy}
-                      onChange={(e) => setNewSub((p) => ({ ...p, approvedBy: e.target.value }))}
-                      className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
-                    >
-                      <option value="">Select Approver...</option>
-                      {allRecruiters.map((r) => <option key={r} value={r}>{r}</option>)}
-                    </select>
+                      onChange={(v) => setNewSub((p) => ({ ...p, approvedBy: v }))}
+                      options={[
+                        { value: "", label: "Select Approver..." },
+                        ...allRecruiters.map((r) => ({ value: r, label: r })),
+                      ]}
+                    />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">Shared With Client Date</label>
                     <input
                       type="date" value={newSub.sharedWithClientDate}
                       onChange={(e) => setNewSub((p) => ({ ...p, sharedWithClientDate: e.target.value }))}
-                      className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                      className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">Client Feedback</label>
-                    <select
+                    <FilterSelect
+                      ariaLabel="Client feedback"
+                      className="w-full"
                       value={newSub.clientFeedback}
-                      onChange={(e) => setNewSub((p) => ({ ...p, clientFeedback: e.target.value as "Awaiting" | "Shortlisted" | "Interview Scheduled" | "Rejected" | "On Hold" | "Offer Stage" }))}
-                      className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
-                    >
-                      <option>Awaiting</option><option>Shortlisted</option><option>Interview Scheduled</option><option>Rejected</option><option>On Hold</option><option>Offer Stage</option>
-                    </select>
+                      onChange={(v) => setNewSub((p) => ({ ...p, clientFeedback: v as "Awaiting" | "Shortlisted" | "Interview Scheduled" | "Rejected" | "On Hold" | "Offer Stage" }))}
+                      options={["Awaiting", "Shortlisted", "Interview Scheduled", "Rejected", "On Hold", "Offer Stage"].map((f) => ({ value: f, label: f }))}
+                    />
                   </div>
                   <div className="col-span-2">
                     <label className="block text-xs font-medium text-gray-500 mb-1">Current Stage</label>
                     <input
                       type="text" value={newSub.currentStage}
                       onChange={(e) => setNewSub((p) => ({ ...p, currentStage: e.target.value }))}
-                      className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                      className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
                       placeholder="e.g. Technical Round, HR Discussion"
                     />
                   </div>
@@ -2338,14 +2370,24 @@ function OfferDashboard() {
             placeholder="Search candidate or position..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 min-w-[200px] rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+            className="flex-1 min-w-[200px] h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
           />
-          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500">
-            {offerStatuses.map((s) => <option key={s} value={s}>{s === "All" ? "All Statuses" : s}</option>)}
-          </select>
-          <select value={filterClient} onChange={(e) => setFilterClient(e.target.value)} className="rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500">
-            {clients.map((c) => <option key={c} value={c}>{c === "All" ? "All Clients" : c}</option>)}
-          </select>
+          <FilterSelect
+            ariaLabel="Filter by offer status"
+            className="w-full sm:w-48"
+            value={filterStatus}
+            onChange={setFilterStatus}
+            options={offerStatuses.map((s) => ({ value: s, label: s === "All" ? "All Statuses" : s }))}
+          />
+          <FilterSelect
+            searchable
+            searchPlaceholder="Search clients..."
+            ariaLabel="Filter by client"
+            className="w-full sm:w-48"
+            value={filterClient}
+            onChange={setFilterClient}
+            options={clients.map((c) => ({ value: c, label: c === "All" ? "All Clients" : c }))}
+          />
         </div>
       </div>
 

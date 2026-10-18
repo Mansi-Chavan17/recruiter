@@ -3189,7 +3189,489 @@
 
 
 
+// import { useState, useEffect } from "react";
+// import {
+//   Edit, X, Mail, Phone, MapPin, Building, User, Clock,
+//   DollarSign, GraduationCap, Briefcase, FileText, Trash2,
+//   Plus, ArrowLeft, ExternalLink, Save, ChevronLeft, ChevronRight,
+// } from "lucide-react";
+// import Header from "../Header";
+// import DocumentUploadModal from "./DocumentUploadModal";
+// import FilterSelect from "../FilterSelect";
+
+// interface CandidateDetailsProps {
+//   candidate: any;
+//   onBack: () => void;
+//   onSaveDetails: (editFormData: any) => Promise<void>;
+//   onUploadDocument: (candidateId: string, form: any) => Promise<void>;
+//   onDeleteDocument: (candidateId: string, documentId: string) => void;
+//   formatCurrency: (amount: number) => string;
+//   onPrev?: () => void;
+//   onNext?: () => void;
+//   currentIndex: number;
+//   totalCandidates: number;
+// }
+
+// const CandidateDetails = ({
+//   candidate, onBack, onSaveDetails, onUploadDocument, onDeleteDocument,
+//   formatCurrency, onPrev, onNext, currentIndex, totalCandidates,
+// }: CandidateDetailsProps) => {
+//   const [showEditModal, setShowEditModal] = useState(false);
+//   const [showDocumentModal, setShowDocumentModal] = useState(false);
+//   const [activeTab, setActiveTab] = useState("resume");
+
+//   // Lock body scroll when modal is open
+//   useEffect(() => {
+//     if (showEditModal || showDocumentModal) {
+//       document.body.style.overflow = "hidden";
+//     } else {
+//       document.body.style.overflow = "";
+//     }
+//     return () => { document.body.style.overflow = ""; };
+//   }, [showEditModal, showDocumentModal]);
+
+//   const handleDocUpload = async (candidateId: string, form: any) => {
+//     await onUploadDocument(candidateId, form);
+//     setShowDocumentModal(false);
+//   };
+
+//   const tabs = [
+//     { id: "resume", label: "Resume", icon: FileText },
+//     { id: "documents", label: "Documents", icon: FileText },
+//     { id: "history", label: "Position History", icon: Briefcase },
+//   ];
+
+//   const resumeUrl = candidate?.contact?.resume;
+
+//   return (
+//     <div className="h-screen flex flex-col bg-white">
+//       <Header />
+
+//       <main className="md:ml-16 flex flex-col flex-1 min-h-0">
+//         {/* ---- Top bar (matches position detail style) ---- */}
+//         <div className="px-8 pt-6 pb-4 border-b border-gray-200 flex-shrink-0">
+//           {/* Row 1: back, name · company, badge ... nav + edit */}
+//           <div className="flex items-center gap-3">
+//             <button
+//               onClick={onBack}
+//               className="p-1 text-gray-500 hover:text-gray-900 transition-colors flex-shrink-0"
+//               title="Back to list"
+//             >
+//               <ArrowLeft className="w-5 h-5" />
+//             </button>
+
+//             <div className="min-w-0 flex-1 flex items-center gap-2 flex-wrap">
+//               {/* LINE 72 — change fontSize below to adjust name size */}
+//               <h1 className="font-semibold text-gray-900 truncate" style={{ fontSize: "25px", lineHeight: "24px" }}>
+//                 {candidate?.candidate}
+//               </h1>
+//               {candidate?.company_name && (
+//                 <>
+//                   <span className="text-gray-300">·</span>
+//                   <span className="text-sm text-gray-600 truncate">
+//                     {candidate.company_name}
+//                   </span>
+//                 </>
+//               )}
+//               {candidate?.status && (
+//                 <span className="inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full bg-teal-50 text-teal-700 border border-teal-200 flex-shrink-0">
+//                   {candidate.status}
+//                 </span>
+//               )}
+//             </div>
+
+//             {/* Prev / Next */}
+//             <div className="flex items-center gap-1 flex-shrink-0">
+//               <button
+//                 onClick={onPrev}
+//                 disabled={!onPrev}
+//                 className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+//               >
+//                 <ChevronLeft className="w-5 h-5" />
+//               </button>
+//               <button
+//                 onClick={onNext}
+//                 disabled={!onNext}
+//                 className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+//               >
+//                 <ChevronRight className="w-5 h-5" />
+//               </button>
+//             </div>
+
+//             {/* Edit button — outline style like position page */}
+//             <button
+//               onClick={() => setShowEditModal(true)}
+//               className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors flex-shrink-0"
+//             >
+//               <Edit className="w-4 h-4" />
+//               Edit candidate
+//             </button>
+//           </div>
+
+//           {/* Row 2: metadata */}
+//           <div className="mt-2 ml-8 flex items-center gap-1.5 text-sm text-gray-500 flex-wrap">
+//             {candidate?.current_role && (
+//               <>
+//                 <Briefcase className="w-3.5 h-3.5" />
+//                 <span>{candidate.current_role}</span>
+//                 <span className="text-gray-300">·</span>
+//               </>
+//             )}
+//             <MapPin className="w-3.5 h-3.5" />
+//             <span>{candidate?.location || "N/A"}</span>
+//             <span className="text-gray-300">·</span>
+//             <DollarSign className="w-3.5 h-3.5" />
+//             <span>CTC: {candidate?.ctc?.current ? formatCurrency(candidate.ctc.current) : "N/A"}</span>
+//             <span className="text-gray-300">·</span>
+//             <Clock className="w-3.5 h-3.5" />
+//             <span>Notice: {candidate?.noticePeriod ? `${candidate.noticePeriod} days` : "N/A"}</span>
+//           </div>
+//         </div>
+
+//         {/* ---- Tabs ---- */}
+//         <div className="flex items-center gap-1 px-8 border-b border-gray-200 flex-shrink-0">
+//           {tabs.map((tab) => {
+//             const Icon = tab.icon;
+//             const isActive = activeTab === tab.id;
+//             return (
+//               <button
+//                 key={tab.id}
+//                 onClick={() => setActiveTab(tab.id)}
+//                 className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors -mb-px ${
+//                   isActive
+//                     ? "text-teal-700 border-teal-600"
+//                     : "text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300"
+//                 }`}
+//               >
+//                 <Icon className="w-4 h-4" />
+//                 {tab.label}
+//               </button>
+//             );
+//           })}
+//         </div>
+
+//         {/* ---- Two-column layout ---- */}
+//         <div className="flex flex-col lg:flex-row flex-1 min-h-0">
+//           {/* Left — resume (wider) */}
+//           <div className="lg:w-[65%] min-w-0 border-r border-gray-200 flex flex-col">
+
+//             <div className={`flex-1 min-h-0 ${activeTab === "resume" ? "" : "overflow-y-auto p-5"} bg-gray-50`}>
+//               {activeTab === "resume" && (
+//                 <div className="h-full flex flex-col">
+//                   {resumeUrl ? (
+//                     <>
+//                       <div className="flex items-center justify-between px-4 py-1.5 bg-white border-b border-gray-200 flex-shrink-0">
+//                         <span className="text-xs font-medium text-gray-600">Resume Preview</span>
+//                         <a href={resumeUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-teal-600 hover:text-teal-800">
+//                           <ExternalLink className="w-3 h-3" />Open in new tab
+//                         </a>
+//                       </div>
+//                       <iframe src={resumeUrl} className="w-full flex-1 min-h-0" title="Resume" />
+//                     </>
+//                   ) : (
+//                     <div className="text-center py-16 text-gray-400">
+//                       <FileText className="w-12 h-12 mx-auto mb-3" /><p className="text-sm">No resume uploaded</p>
+//                     </div>
+//                   )}
+//                 </div>
+//               )}
+
+//               {activeTab === "documents" && (
+//                 <div>
+//                   <div className="flex items-center justify-between mb-4">
+//                     <h3 className="text-sm font-semibold text-gray-900">Documents ({candidate?.documents?.length || 0})</h3>
+//                     <button onClick={() => setShowDocumentModal(true)} className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-teal-600 text-white rounded-lg hover:bg-teal-700">
+//                       <Plus className="w-3.5 h-3.5" />Upload
+//                     </button>
+//                   </div>
+//                   {candidate?.documents?.length > 0 ? (
+//                     <div className="space-y-2">
+//                       {candidate.documents.map((doc: any) => (
+//                         <div key={doc.id} className="flex items-center justify-between bg-white rounded-lg p-3 border border-gray-200">
+//                           <div className="flex items-center gap-3 min-w-0">
+//                             <FileText className="w-5 h-5 text-teal-600 flex-shrink-0" />
+//                             <div className="min-w-0">
+//                               <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-teal-600 hover:underline truncate block">{doc.name}</a>
+//                               <div className="text-xs text-gray-500">{doc.type} · {new Date(doc.uploadDate).toLocaleDateString("en-IN")}</div>
+//                             </div>
+//                           </div>
+//                           <button onClick={() => onDeleteDocument(candidate?.id, doc.id)} className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded flex-shrink-0"><Trash2 className="w-4 h-4" /></button>
+//                         </div>
+//                       ))}
+//                     </div>
+//                   ) : (
+//                     <div className="text-center py-12 text-gray-400"><FileText className="w-10 h-10 mx-auto mb-2" /><p className="text-sm">No documents uploaded</p></div>
+//                   )}
+//                 </div>
+//               )}
+
+//               {activeTab === "history" && (
+//                 <div>
+//                   {candidate?.candidate_position_history?.length > 0 ? (
+//                     <div className="space-y-3">
+//                       {candidate.candidate_position_history.map((pos: any) => (
+//                         <div key={pos.id} className="bg-white rounded-lg p-4 border border-gray-200">
+//                           <div className="flex items-start justify-between mb-2">
+//                             <div>
+//                               <div className="text-sm font-semibold text-gray-900">{pos.job?.position}</div>
+//                               <div className="text-xs text-gray-500">{pos.job?.client?.client_name}</div>
+//                             </div>
+//                             <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-teal-100 text-teal-700">{pos?.current_stage}</span>
+//                           </div>
+//                           <div className="flex items-center gap-4 text-xs text-gray-500">
+//                             <span>Recruiter: {pos.recruiter?.length > 0 ? pos.recruiter.map((r: any) => r.name || r.email).join(", ") : "—"}</span>
+//                             {pos.last_modefied && <span>Modified: {new Date(pos.last_modefied).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>}
+//                           </div>
+//                         </div>
+//                       ))}
+//                     </div>
+//                   ) : (
+//                     <div className="text-center py-12 text-gray-400"><Briefcase className="w-10 h-10 mx-auto mb-2" /><p className="text-sm">No position history</p></div>
+//                   )}
+//                 </div>
+//               )}
+//             </div>
+//           </div>
+
+//           {/* Right — info cards (narrower, compact) */}
+//           <div className="lg:w-[35%] flex-shrink-0 overflow-y-auto p-4 space-y-4">
+//             <InfoCard title="Personal Information">
+//               <InfoRow icon={Mail} label="Email Address"><ValueBadge>{candidate?.contact?.email}</ValueBadge></InfoRow>
+//               <InfoRow icon={Phone} label="Phone Number"><ValueBadge>{candidate?.contact?.phone || "N/A"}</ValueBadge></InfoRow>
+//               <InfoRow icon={User} label="Gender"><Val>{candidate?.gender || "N/A"}</Val></InfoRow>
+//               <InfoRow icon={MapPin} label="Location"><Val>{candidate?.location || "N/A"}</Val></InfoRow>
+//             </InfoCard>
+
+//             <InfoCard title="Professional Information">
+//               <InfoRow icon={Building} label="Organization"><Val>{candidate?.company_name || "N/A"}</Val></InfoRow>
+//               <InfoRow icon={Briefcase} label="Designation"><Val>{candidate?.current_role || "N/A"}</Val></InfoRow>
+//               <InfoRow icon={DollarSign} label="Current CTC"><Val>{candidate?.ctc?.current ? formatCurrency(candidate.ctc.current) : "N/A"}</Val></InfoRow>
+//               <InfoRow icon={DollarSign} label="Expected CTC"><Val>{candidate?.ctc?.expected ? formatCurrency(candidate.ctc.expected) : "N/A"}</Val></InfoRow>
+//               <InfoRow icon={Clock} label="Notice Period"><Val>{candidate?.noticePeriod ? `${candidate.noticePeriod} days` : "N/A"}</Val></InfoRow>
+//             </InfoCard>
+
+//             <InfoCard title="Education & Other">
+//               <InfoRow icon={GraduationCap} label="Education"><Val>{candidate?.education || "N/A"}</Val></InfoRow>
+//               <InfoRow icon={Briefcase} label="Engagement"><Val>{candidate?.engagement_type || "N/A"}</Val></InfoRow>
+//               <InfoRow icon={MapPin} label="Open to Relocate"><Val>{candidate?.open_to_relocation || "N/A"}</Val></InfoRow>
+//               <InfoRow icon={User} label="Recruiter">
+//                 <Val>{candidate?.candidate_position_history?.length > 0 && candidate.candidate_position_history[0]?.recruiter?.length > 0
+//                   ? candidate.candidate_position_history[0].recruiter.map((r: any) => r.name || r.email).join(", ") : "N/A"}</Val>
+//               </InfoRow>
+//             </InfoCard>
+
+//             <InfoCard title="Notes">
+//               <p className="text-sm text-gray-600">{candidate?.special_comments || <span className="text-gray-400 italic">No notes</span>}</p>
+//             </InfoCard>
+//           </div>
+//         </div>
+//       </main>
+
+//       {showEditModal && (
+//         <EditCandidateModal
+//           candidate={candidate}
+//           onSave={async (data) => { await onSaveDetails(data); setShowEditModal(false); }}
+//           onClose={() => setShowEditModal(false)}
+//         />
+//       )}
+
+//       {showDocumentModal && (
+//         <DocumentUploadModal
+//           candidateId={candidate?.id}
+//           onUpload={handleDocUpload}
+//           onClose={() => setShowDocumentModal(false)}
+//         />
+//       )}
+//     </div>
+//   );
+// };
+
+// /* ================================================================== */
+// /* Edit Modal                                                          */
+// /* ================================================================== */
+
+// const EditCandidateModal = ({ candidate, onSave, onClose }: {
+//   candidate: any; onSave: (data: any) => Promise<void>; onClose: () => void;
+// }) => {
+//   const [form, setForm] = useState<any>({ ...candidate });
+//   const [saving, setSaving] = useState(false);
+
+//   const update = (path: string, value: any) => {
+//     setForm((prev: any) => {
+//       const keys = path.split(".");
+//       if (keys.length === 1) return { ...prev, [keys[0]]: value };
+//       if (keys.length === 2) return { ...prev, [keys[0]]: { ...prev[keys[0]], [keys[1]]: value } };
+//       return prev;
+//     });
+//   };
+
+//   const handleSubmit = async () => {
+//     try { setSaving(true); await onSave(form); } catch {} finally { setSaving(false); }
+//   };
+
+//   const inputClass = "w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-teal-500 focus:border-teal-500";
+
+//   return (
+//     <div className="fixed inset-0 z-50 flex items-center justify-center">
+//       {/* Backdrop */}
+//       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+
+//       {/* Modal */}
+//       <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+//         {/* Header - sticky */}
+//         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0">
+//           <h2 className="text-lg font-semibold text-gray-900">Edit Candidate Details</h2>
+//           <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
+//             <X className="w-5 h-5" />
+//           </button>
+//         </div>
+
+//         {/* Body - scrollable */}
+//         <div className="overflow-y-auto flex-1 px-6 py-5 space-y-5">
+//           <FormSection title="Personal Information">
+//             <div className="grid grid-cols-2 gap-4">
+//               <FormField label="Full Name"><input type="text" value={form?.candidate || ""} onChange={(e) => update("candidate", e.target.value)} className={inputClass} /></FormField>
+//               <FormField label="Email"><input type="email" value={form?.contact?.email || ""} onChange={(e) => update("contact.email", e.target.value)} className={inputClass} /></FormField>
+//               <FormField label="Phone"><input type="tel" value={form?.contact?.phone || ""} onChange={(e) => update("contact.phone", e.target.value)} className={inputClass} /></FormField>
+//               {/* <FormField label="Gender"><select value={form?.gender || ""} onChange={(e) => update("gender", e.target.value)} className={inputClass}><option value="">Select</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select></FormField> */}
+//               <FormField label="Gender">
+//   <FilterSelect
+//     ariaLabel="Gender"
+//     className="w-full"
+//     value={form?.gender || ""}
+//     onChange={(v) => update("gender", v)}
+//     options={[
+//       { value: "", label: "Select" },
+//       { value: "Male", label: "Male" },
+//       { value: "Female", label: "Female" },
+//       { value: "Other", label: "Other" },
+//     ]}
+//   />
+// </FormField>
+//               <FormField label="Location"><input type="text" value={form?.location || ""} onChange={(e) => update("location", e.target.value)} className={inputClass} /></FormField>
+//               <FormField label="Resume URL"><input type="url" value={form?.contact?.resume || ""} onChange={(e) => update("contact.resume", e.target.value)} className={inputClass} /></FormField>
+//             </div>
+//           </FormSection>
+
+//           <FormSection title="Professional Information">
+//             <div className="grid grid-cols-2 gap-4">
+//               <FormField label="Organization"><input type="text" value={form?.company_name || ""} onChange={(e) => update("company_name", e.target.value)} className={inputClass} /></FormField>
+//               <FormField label="Designation"><input type="text" value={form?.current_role || ""} onChange={(e) => update("current_role", e.target.value)} className={inputClass} /></FormField>
+//               <FormField label="Current CTC (₹)"><input type="number" value={form?.ctc?.current || ""} onChange={(e) => update("ctc.current", e.target.value)} className={inputClass} /></FormField>
+//               <FormField label="Expected CTC (₹)"><input type="number" value={form?.ctc?.expected || ""} onChange={(e) => update("ctc.expected", e.target.value)} className={inputClass} /></FormField>
+//               <FormField label="Notice Period (days)"><input type="number" value={form?.noticePeriod || ""} onChange={(e) => update("noticePeriod", e.target.value)} className={inputClass} /></FormField>
+//             </div>
+//           </FormSection>
+
+//           <FormSection title="Education & Other">
+//             <div className="grid grid-cols-2 gap-4">
+//               <FormField label="Education"><input type="text" value={form?.education || ""} onChange={(e) => update("education", e.target.value)} className={inputClass} /></FormField>
+//               {/* <FormField label="Engagement Type"><select value={form?.engagement_type || ""} onChange={(e) => update("engagement_type", e.target.value)} className={inputClass}><option value="Hybrid">Hybrid</option><option value="In office">In office</option><option value="Remote">Remote</option></select></FormField> */}
+//              <FormField label="Engagement Type">
+//   <FilterSelect
+//     ariaLabel="Engagement type"
+//     className="w-full"
+//     value={form?.engagement_type || ""}
+//     onChange={(v) => update("engagement_type", v)}
+//     options={[
+//       { value: "Hybrid", label: "Hybrid" },
+//       { value: "In office", label: "In office" },
+//       { value: "Remote", label: "Remote" },
+//     ]}
+//   />
+// </FormField>
+             
+             
+             
+//               {/* <FormField label="Open to Relocation"><select value={form?.open_to_relocation || ""} onChange={(e) => update("open_to_relocation", e.target.value)} className={inputClass}><option value="Yes">Yes</option><option value="No">No</option></select></FormField> */}
+            
+//             <FormField label="Open to Relocation">
+//   <FilterSelect
+//     ariaLabel="Open to relocation"
+//     className="w-full"
+//     value={form?.open_to_relocation || ""}
+//     onChange={(v) => update("open_to_relocation", v)}
+//     options={[
+//       { value: "Yes", label: "Yes" },
+//       { value: "No", label: "No" },
+//     ]}
+//   />
+// </FormField>
+//             </div>
+//           </FormSection>
+
+//           <FormSection title="Notes">
+//             <textarea value={form?.special_comments || ""} onChange={(e) => update("special_comments", e.target.value)} rows={3} placeholder="Add notes..." className={inputClass} />
+//           </FormSection>
+//         </div>
+
+//         {/* Footer - sticky */}
+//         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 flex-shrink-0">
+//           <button onClick={onClose} className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</button>
+//           <button onClick={handleSubmit} disabled={saving} className="flex items-center gap-2 px-5 py-2 text-sm bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50">
+//             <Save className="w-4 h-4" />{saving ? "Saving..." : "Save Changes"}
+//           </button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// /* ================================================================== */
+// /* Shared components                                                   */
+// /* ================================================================== */
+
+// const InfoCard = ({ title, children }: { title: string; children: React.ReactNode }) => (
+//   <div className="border border-gray-200 rounded-lg">
+//     <div className="px-3 py-2.5 border-b border-gray-100">
+//       <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wide">{title}</h3>
+//     </div>
+//     <div className="px-3 py-2.5 space-y-2.5">{children}</div>
+//   </div>
+// );
+
+// const InfoRow = ({ icon: Icon, label, children }: { icon: any; label: string; children: React.ReactNode }) => (
+//   <div className="flex items-center justify-between gap-3">
+//     <div className="flex items-center gap-2 text-gray-500 flex-shrink-0">
+//       <Icon className="w-3.5 h-3.5" />
+//       <span className="text-xs">{label}</span>
+//     </div>
+//     <div className="min-w-0 text-right">{children}</div>
+//   </div>
+// );
+
+// const Val = ({ children }: { children: React.ReactNode }) => (
+//   <span className="text-xs font-semibold text-gray-900">{children}</span>
+// );
+
+// const ValueBadge = ({ children }: { children: React.ReactNode }) => (
+//   <span className="inline-flex px-2.5 py-0.5 text-xs font-medium text-teal-700 bg-teal-50 border border-teal-200 rounded-full">
+//     {children}
+//   </span>
+// );
+
+// const FormSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
+//   <div>
+//     <h3 className="text-sm font-semibold text-gray-900 mb-3 pb-2 border-b border-gray-100">{title}</h3>
+//     {children}
+//   </div>
+// );
+
+// const FormField = ({ label, children }: { label: string; children: React.ReactNode }) => (
+//   <div>
+//     <label className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
+//     {children}
+//   </div>
+// );
+
+// export default CandidateDetails;
+
+
+
+
+
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Edit, X, Mail, Phone, MapPin, Building, User, Clock,
   DollarSign, GraduationCap, Briefcase, FileText, Trash2,
@@ -3197,6 +3679,8 @@ import {
 } from "lucide-react";
 import Header from "../Header";
 import DocumentUploadModal from "./DocumentUploadModal";
+import FilterSelect from "../FilterSelect";
+import { slugify } from "../../utils/slug";
 
 interface CandidateDetailsProps {
   candidate: any;
@@ -3215,9 +3699,21 @@ const CandidateDetails = ({
   candidate, onBack, onSaveDetails, onUploadDocument, onDeleteDocument,
   formatCurrency, onPrev, onNext, currentIndex, totalCandidates,
 }: CandidateDetailsProps) => {
+  const navigate = useNavigate();
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDocumentModal, setShowDocumentModal] = useState(false);
   const [activeTab, setActiveTab] = useState("resume");
+
+  // Open the submission detail for a position history entry.
+  // pos.id is the submission id; job.position gives the URL slug.
+  const openSubmission = (pos: any) => {
+    if (!pos?.id) return;
+    const positionName = pos.job?.position || "";
+    const slug = slugify(positionName) || "position";
+    navigate(`/submission-management/${slug}/${pos.id}`, {
+      state: { groupName: positionName, groupBy: "position" },
+    });
+  };
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -3409,7 +3905,20 @@ const CandidateDetails = ({
                   {candidate?.candidate_position_history?.length > 0 ? (
                     <div className="space-y-3">
                       {candidate.candidate_position_history.map((pos: any) => (
-                        <div key={pos.id} className="bg-white rounded-lg p-4 border border-gray-200">
+                        <div
+                          key={pos.id}
+                          onClick={() => openSubmission(pos)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              openSubmission(pos);
+                            }
+                          }}
+                          title="Open submission"
+                          className="bg-white rounded-lg p-4 border border-gray-200 cursor-pointer hover:border-teal-300 hover:bg-teal-50/30 transition-colors"
+                        >
                           <div className="flex items-start justify-between mb-2">
                             <div>
                               <div className="text-sm font-semibold text-gray-900">{pos.job?.position}</div>
@@ -3532,7 +4041,21 @@ const EditCandidateModal = ({ candidate, onSave, onClose }: {
               <FormField label="Full Name"><input type="text" value={form?.candidate || ""} onChange={(e) => update("candidate", e.target.value)} className={inputClass} /></FormField>
               <FormField label="Email"><input type="email" value={form?.contact?.email || ""} onChange={(e) => update("contact.email", e.target.value)} className={inputClass} /></FormField>
               <FormField label="Phone"><input type="tel" value={form?.contact?.phone || ""} onChange={(e) => update("contact.phone", e.target.value)} className={inputClass} /></FormField>
-              <FormField label="Gender"><select value={form?.gender || ""} onChange={(e) => update("gender", e.target.value)} className={inputClass}><option value="">Select</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select></FormField>
+              {/* <FormField label="Gender"><select value={form?.gender || ""} onChange={(e) => update("gender", e.target.value)} className={inputClass}><option value="">Select</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select></FormField> */}
+              <FormField label="Gender">
+  <FilterSelect
+    ariaLabel="Gender"
+    className="w-full"
+    value={form?.gender || ""}
+    onChange={(v) => update("gender", v)}
+    options={[
+      { value: "", label: "Select" },
+      { value: "Male", label: "Male" },
+      { value: "Female", label: "Female" },
+      { value: "Other", label: "Other" },
+    ]}
+  />
+</FormField>
               <FormField label="Location"><input type="text" value={form?.location || ""} onChange={(e) => update("location", e.target.value)} className={inputClass} /></FormField>
               <FormField label="Resume URL"><input type="url" value={form?.contact?.resume || ""} onChange={(e) => update("contact.resume", e.target.value)} className={inputClass} /></FormField>
             </div>
@@ -3551,8 +4074,37 @@ const EditCandidateModal = ({ candidate, onSave, onClose }: {
           <FormSection title="Education & Other">
             <div className="grid grid-cols-2 gap-4">
               <FormField label="Education"><input type="text" value={form?.education || ""} onChange={(e) => update("education", e.target.value)} className={inputClass} /></FormField>
-              <FormField label="Engagement Type"><select value={form?.engagement_type || ""} onChange={(e) => update("engagement_type", e.target.value)} className={inputClass}><option value="Hybrid">Hybrid</option><option value="In office">In office</option><option value="Remote">Remote</option></select></FormField>
-              <FormField label="Open to Relocation"><select value={form?.open_to_relocation || ""} onChange={(e) => update("open_to_relocation", e.target.value)} className={inputClass}><option value="Yes">Yes</option><option value="No">No</option></select></FormField>
+              {/* <FormField label="Engagement Type"><select value={form?.engagement_type || ""} onChange={(e) => update("engagement_type", e.target.value)} className={inputClass}><option value="Hybrid">Hybrid</option><option value="In office">In office</option><option value="Remote">Remote</option></select></FormField> */}
+             <FormField label="Engagement Type">
+  <FilterSelect
+    ariaLabel="Engagement type"
+    className="w-full"
+    value={form?.engagement_type || ""}
+    onChange={(v) => update("engagement_type", v)}
+    options={[
+      { value: "Hybrid", label: "Hybrid" },
+      { value: "In office", label: "In office" },
+      { value: "Remote", label: "Remote" },
+    ]}
+  />
+</FormField>
+             
+             
+             
+              {/* <FormField label="Open to Relocation"><select value={form?.open_to_relocation || ""} onChange={(e) => update("open_to_relocation", e.target.value)} className={inputClass}><option value="Yes">Yes</option><option value="No">No</option></select></FormField> */}
+            
+            <FormField label="Open to Relocation">
+  <FilterSelect
+    ariaLabel="Open to relocation"
+    className="w-full"
+    value={form?.open_to_relocation || ""}
+    onChange={(v) => update("open_to_relocation", v)}
+    options={[
+      { value: "Yes", label: "Yes" },
+      { value: "No", label: "No" },
+    ]}
+  />
+</FormField>
             </div>
           </FormSection>
 

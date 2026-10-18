@@ -2028,6 +2028,9 @@
 
 
 
+
+
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Search, Plus, Filter, X } from "lucide-react";
@@ -2451,15 +2454,19 @@ const CandidateManagement = () => {
     );
   }
 
+  const activeFilterCount = Object.values(filters).filter(
+  (value) => String(value ?? "").trim() !== ""
+).length;
+
   // --- Render: List View ---
   return (
     <>
       <div className="min-h-screen bg-white">
         <Header />
 
-        <main className="md:ml-16 px-6 py-4">
+        <main className="md:ml-16 px-4 md:px-6 py-4">
           {/* Search + Filter + Add — single row */}
-          <div className="flex items-center gap-3 mb-4">
+          {/* <div className="flex items-center gap-3 mb-4">
             <div className="relative flex-1">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search className="h-5 w-5 text-gray-400" />
@@ -2498,7 +2505,65 @@ const CandidateManagement = () => {
               <Plus className="w-4 h-4" />
               Add Candidate
             </button>
-          </div>
+          </div> */}
+
+
+          {/* Search + Filter + Add */}
+<div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+  {/* Search */}
+  <div className="relative flex-1 min-w-0">
+    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+    <input
+      type="text"
+      placeholder="Search by name, email, phone, designation, organization or city..."
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      className="w-full h-10 pl-9 pr-9 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition"
+    />
+    {searchQuery && (
+      <button
+        type="button"
+        onClick={() => setSearchQuery("")}
+        aria-label="Clear search"
+        className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 grid place-items-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+      >
+        <X className="h-3.5 w-3.5" />
+      </button>
+    )}
+  </div>
+
+  <div className="grid grid-cols-2 sm:flex items-center gap-3">
+    {/* Filters toggle */}
+    <button
+      type="button"
+      onClick={() => setShowFilters(!showFilters)}
+      aria-expanded={showFilters}
+      className={`h-10 flex items-center justify-center gap-2 px-4 border rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+        showFilters
+          ? "border-teal-500 bg-teal-50 text-teal-700"
+          : "border-gray-300 text-gray-700 hover:bg-gray-50"
+      }`}
+    >
+      <Filter className="w-4 h-4" />
+      Filters
+      {activeFilterCount > 0 && (
+        <span className="ml-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-teal-600 px-1.5 text-[11px] font-semibold text-white">
+          {activeFilterCount}
+        </span>
+      )}
+    </button>
+
+    {/* Add */}
+    <button
+      type="button"
+      onClick={() => setShowAddForm(true)}
+      className="h-10 flex items-center justify-center gap-2 px-4 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition-colors whitespace-nowrap"
+    >
+      <Plus className="w-4 h-4" />
+      Add Candidate
+    </button>
+  </div>
+</div>
 
           {searchQuery && (
             <div className="mb-3 text-sm text-gray-600">

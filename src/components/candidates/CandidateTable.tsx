@@ -613,6 +613,9 @@
 // export default CandidateTable;
 
 
+
+
+
 import { User } from "lucide-react";
 
 interface CandidateTableProps {

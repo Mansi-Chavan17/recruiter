@@ -5346,6 +5346,8 @@
 
 
 
+
+
 import { useState, useEffect, useRef } from "react";
 import Header from "../components/Header";
 import { useNavigate, useParams } from "react-router-dom";
@@ -5364,7 +5366,9 @@ import AsyncSelect from "react-select/async";
 import CreatePositionWizard from "../components/positions/CreatePositionWizard";
 import PositionDetail from "../components/positions/Positiondetail";
 import SharePositionModal from "../components/positions/Sharepositionmodal";
-import { STATUS_OPTIONS } from "../components/positions/positionForm";
+// import { STATUS_OPTIONS } from "../components/positions/positionForm";
+import { STATUS_OPTIONS, toUiPriority, toApiPriority } from "../components/positions/positionForm";
+import FilterSelect from "../components/FilterSelect";
 
 /* ------------------------------------------------------------------ */
 /* Shared helpers                                                      */
@@ -5536,7 +5540,7 @@ const TagCandidateModal = ({
                   ...base,
                   minHeight: "40px",
                   borderColor: "#d1d5db",
-                  "&:hover": { borderColor: "#3b82f6" },
+                     "&:hover": { borderColor: "#14b8a6" },
                 }),
                 menu: (base) => ({ ...base, zIndex: 9999 }),
               }}
@@ -5653,6 +5657,13 @@ const TagCandidateModal = ({
 /* Positions table                                                     */
 /* ------------------------------------------------------------------ */
 
+const priorityBadgeClass = (priority: string) =>
+  priority === "High"
+    ? "bg-red-100 text-red-800"
+    : priority === "Normal"
+    ? "bg-yellow-100 text-yellow-800"
+    : "bg-green-100 text-green-800";
+
 const PositionTable = ({ positions, onOpen, onTag, onAIMatcher, onShare }) => (
   <>
     {/* Mobile: stacked cards */}
@@ -5667,14 +5678,8 @@ const PositionTable = ({ positions, onOpen, onTag, onAIMatcher, onShare }) => (
             <p className="text-sm font-medium text-gray-900 leading-5 break-words">
               {position.positionName}
             </p>
-            <span
-              className={`shrink-0 inline-flex px-2 py-0.5 text-xs font-medium leading-4 rounded-full ${
-                position.priority === "High"
-                  ? "bg-red-100 text-red-800"
-                  : position.priority === "Medium"
-                  ? "bg-yellow-100 text-yellow-800"
-                  : "bg-green-100 text-green-800"
-              }`}
+                        <span
+              className={`shrink-0 inline-flex px-2 py-0.5 text-xs font-medium leading-4 rounded-full ${priorityBadgeClass(position.priority)}`}
             >
               {position.priority}
             </span>
@@ -5785,14 +5790,8 @@ const PositionTable = ({ positions, onOpen, onTag, onAIMatcher, onShare }) => (
                   <span className="text-sm text-gray-900 leading-5 break-words">
                     {position.clientName}
                   </span>
-                  <span
-                    className={`inline-flex self-start mt-1 px-2 py-0.5 text-xs font-medium leading-4 rounded-full ${
-                      position.priority === "High"
-                        ? "bg-red-100 text-red-800"
-                        : position.priority === "Medium"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-green-100 text-green-800"
-                    }`}
+                                    <span
+                    className={`inline-flex self-start mt-1 px-2 py-0.5 text-xs font-medium leading-4 rounded-full ${priorityBadgeClass(position.priority)}`}
                   >
                     {position.priority}
                   </span>
@@ -6010,7 +6009,7 @@ const normalizeStatus = (status: any) => {
         ? `${(Number(position.ctc) / 100000).toFixed(0)} LPA`
         : "N/A",
       location: position.location || "N/A",
-      priority: position.priority || "Medium",
+      priority: toUiPriority(position.priority),
       experience: position.experience ? `${position.experience} years` : "N/A",
       workplaceType: position.mode || "N/A",
       status: normalizeStatus(position.status),
@@ -6077,7 +6076,7 @@ const normalizeStatus = (status: any) => {
           city: position.location || "",
           location: position.location || "",
           experience: position.experience ? `${position.experience} years` : "",
-          priority: position.priority || "",
+          priority: toUiPriority(position.priority),
           function: position.function || "",
           role: position.role || "",
           workplaceType: position.workplaceType || "",
@@ -6262,9 +6261,9 @@ const normalizeStatus = (status: any) => {
 
   const handleUpdatePosition = async (payload: any) => {
     try {
-      const response = await positionService.updatePosition(
+            const response = await positionService.updatePosition(
         String(payload.id),
-        payload
+        { ...payload, priority: toApiPriority(payload.priority) }
       );
 
       if (response.status === 200) {
@@ -6441,38 +6440,40 @@ const normalizeStatus = (status: any) => {
               />
             </div>
 
-            <select
-              className="h-10 px-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 md:flex-1 lg:flex-none lg:w-44 shrink-0"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="all">All statuses</option>
-              {statusFilterOptions.map((status: string) => (
-                <option key={status} value={status}>
-                  {status}
-                </option>
-              ))}
-            </select>
+            <FilterSelect
+  ariaLabel="Filter by status"
+  className="md:flex-1 lg:flex-none lg:w-44 shrink-0"
+  value={statusFilter}
+  onChange={setStatusFilter}
+  options={[
+    { value: "all", label: "All statuses" },
+    ...statusFilterOptions.map((s: string) => ({ value: s, label: s })),
+  ]}
+/>
 
-            <select
-              className="h-10 px-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 md:flex-1 lg:flex-none lg:w-44 shrink-0"
-              value={filterBy}
-              onChange={(e) => setFilterBy(e.target.value)}
-            >
-              <option value="all">All priorities</option>
-              <option value="High">High priority</option>
-              <option value="Medium">Medium priority</option>
-              <option value="Low">Low priority</option>
-            </select>
+<FilterSelect
+  ariaLabel="Filter by priority"
+  className="md:flex-1 lg:flex-none lg:w-44 shrink-0"
+  value={filterBy}
+  onChange={setFilterBy}
+  options={[
+    { value: "all", label: "All priorities" },
+    { value: "High", label: "High priority" },
+    { value: "Normal", label: "Normal priority" },
+    { value: "Low", label: "Low priority" },
+  ]}
+/>
 
-            <select
-              className="h-10 px-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 md:flex-1 lg:flex-none lg:w-44 shrink-0"
-              value={groupBy}
-              onChange={(e) => setGroupBy(e.target.value)}
-            >
-              <option value="none">No grouping</option>
-              <option value="clientName">Group by client</option>
-            </select>
+<FilterSelect
+  ariaLabel="Group positions"
+  className="md:flex-1 lg:flex-none lg:w-44 shrink-0"
+  value={groupBy}
+  onChange={setGroupBy}
+  options={[
+    { value: "none", label: "No grouping" },
+    { value: "clientName", label: "Group by client" },
+  ]}
+/>
 
             <button
               className="h-10 px-4 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shrink-0"

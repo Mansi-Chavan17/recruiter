@@ -705,7 +705,7 @@ const CreatePositionWizard = ({
               <button
                 type="button"
                 onClick={handleNext}
-                className="h-9 px-5 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700"
+                className="h-9 px-5 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-teal-700"
               >
                 Next
               </button>
@@ -714,7 +714,7 @@ const CreatePositionWizard = ({
                 type="button"
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="h-9 px-5 inline-flex items-center gap-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 disabled:bg-emerald-300"
+                className="h-9 px-5 inline-flex items-center gap-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-teal-700 disabled:bg-teal-300"
               >
                 {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
                 {submitting ? "Creating..." : "Create position"}
@@ -775,7 +775,7 @@ const CreatePositionWizard = ({
             <button
               type="button"
               onClick={handleNext}
-              className="flex-1 h-11 rounded-lg bg-emerald-600 text-white text-sm font-medium"
+              className="flex-1 h-11 rounded-lg bg-teal-600 text-white text-sm font-medium"
             >
               Next
             </button>
@@ -784,7 +784,7 @@ const CreatePositionWizard = ({
               type="button"
               onClick={handleSubmit}
               disabled={submitting}
-              className="flex-1 h-11 rounded-lg bg-emerald-600 text-white text-sm font-medium disabled:bg-emerald-300"
+              className="flex-1 h-11 rounded-lg bg-teal-600 text-white text-sm font-medium disabled:bg-teal-300"
             >
               {submitting ? "Creating..." : "Create position"}
             </button>

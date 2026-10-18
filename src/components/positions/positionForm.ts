@@ -10,9 +10,9 @@ export const emptyPosition = (recruiter: string) => ({
   clientSPOC: "",
   recruiter,
   status: "Open",
-  priority: "",
+  priority: "Normal",
   roleType: "",
-  jobType: "",
+  jobType: "Full-time",
   function: "",
   role: "",
   education: "",
@@ -66,7 +66,7 @@ const toList = (value: string) =>
 export const buildCreatePayload = (form: PositionForm, recruiter: string) => ({
   positionName: form.positionName,
   clientName: form.clientName,
-  priority: form.priority || "",
+  priority: toApiPriority(form.priority),
   status: form.status,
   roleType: form.roleType || "",
   jobType: form.jobType || "",
@@ -109,7 +109,21 @@ export const STATUS_OPTIONS = [
   "Candidate identified",
 ];
 
-export const PRIORITY_OPTIONS = ["High", "Medium", "Low"];
+export const PRIORITY_OPTIONS = ["High", "Normal", "Low"];
+
+/** Backend value -> UI label. Medium, N/A, empty all show as Normal. */
+export const toUiPriority = (priority: any) => {
+  const value = String(priority || "").trim().toLowerCase();
+  if (value === "high") return "High";
+  if (value === "low") return "Low";
+  return "Normal";
+};
+
+/** UI label -> backend value. Normal is saved as Medium. */
+export const toApiPriority = (priority: any) => {
+  const value = toUiPriority(priority);
+  return value === "Normal" ? "Medium" : value;
+};
 
 export const JOB_TYPE_OPTIONS = [
   "Full-time",

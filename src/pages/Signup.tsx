@@ -31,7 +31,7 @@ const SignupPage: React.FC = () => {
       localStorage.setItem("refreshToken", response.data.refreshToken);
       alert(`Google login successful for ${response.data.email}`);
 
-      navigate("/position-management");
+      navigate("/pipeline-dashboard");
     } catch (err: unknown) {
       if (err instanceof Error) alert(err.message);
       else alert("Google login failed!");
