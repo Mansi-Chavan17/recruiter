@@ -219,6 +219,7 @@
 
 // export default CandidatesTab;
 
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bot, Mail, Clock, Wallet, UserCheck } from "lucide-react";
@@ -236,9 +237,11 @@ const toLPA = (value: any, alreadyLPA = false) => {
 
 const Stat = ({ icon: Icon, label, value }: any) => (
   <div className="flex items-center gap-2 min-w-0">
-    <Icon className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+    <span className="w-6 h-6 rounded-md bg-gray-50 grid place-items-center shrink-0">
+      <Icon className="w-3 h-3 text-gray-400" />
+    </span>
     <span className="text-xs text-gray-500 shrink-0">{label}</span>
-    <span className="text-xs font-medium text-gray-900 truncate">{value}</span>
+    <span className="text-xs font-semibold text-gray-800 truncate">{value}</span>
   </div>
 );
 
@@ -264,22 +267,22 @@ const CandidateRow = ({
           }
         : undefined
     }
-    className={`flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-xl border border-gray-100 hover:border-gray-200 transition ${
-      onClick ? "cursor-pointer hover:bg-gray-50" : ""
+    className={`flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-xl border border-gray-200 bg-white hover:border-emerald-200 hover:shadow-sm transition-all duration-150 ${
+      onClick ? "cursor-pointer" : ""
     }`}
   >
-    <span className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-700 grid place-items-center text-sm font-semibold shrink-0">
+    <span className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-700 grid place-items-center text-sm font-bold shrink-0 ring-1 ring-emerald-200/60">
       {initials(candidate.name)}
     </span>
 
     <div className="min-w-0 flex-1">
       <div className="flex flex-wrap items-center gap-2">
-        <p className="text-sm font-medium text-gray-900 truncate">
+        <p className="text-sm font-semibold text-gray-900 truncate">
           {candidate.name || "Unnamed candidate"}
         </p>
         {status && (
           <span
-            className={`px-2 py-0.5 rounded-full text-xs font-medium ${candidateStatusTone(
+            className={`px-2 py-0.5 rounded-full text-xs font-semibold ${candidateStatusTone(
               status
             )}`}
           >
@@ -288,10 +291,10 @@ const CandidateRow = ({
         )}
         {aiScore ? (
           <span
-            className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+            className={`px-2 py-0.5 rounded-full text-xs font-semibold ring-1 ${
               aiScore >= 85
-                ? "bg-emerald-50 text-emerald-700"
-                : "bg-red-50 text-red-700"
+                ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
+                : "bg-red-50 text-red-700 ring-red-200"
             }`}
           >
             AI {aiScore}
@@ -299,7 +302,7 @@ const CandidateRow = ({
         ) : null}
       </div>
 
-      <p className="text-xs text-gray-500 truncate mt-0.5">{candidate.email}</p>
+      <p className="text-xs text-gray-400 truncate mt-0.5">{candidate.email}</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-x-5 gap-y-1.5 mt-2.5">
         <Stat
@@ -340,8 +343,8 @@ const CandidateRow = ({
 );
 
 const EmptyState = ({ children }: any) => (
-  <div className="py-12 text-center">
-    <p className="text-sm text-gray-500">{children}</p>
+  <div className="py-16 text-center">
+    <p className="text-sm text-gray-400">{children}</p>
   </div>
 );
 
@@ -373,22 +376,24 @@ const CandidatesTab = ({
   ];
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100">
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       {/* Segmented control + contextual actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 border-b border-gray-100">
-        <div className="inline-flex p-1 bg-gray-100 rounded-lg">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 px-5 py-4 border-b border-gray-100 bg-gray-50/60">
+        <div className="inline-flex p-1 bg-gray-200/70 rounded-lg">
           {views.map((item) => (
             <button
               key={item.id}
               onClick={() => setView(item.id as any)}
-              className={`h-8 px-3.5 rounded-md text-sm font-medium transition ${
+              className={`h-8 px-4 rounded-md text-sm font-medium transition-all duration-150 ${
                 view === item.id
-                  ? "bg-white text-gray-900 shadow-sm"
+                  ? "bg-white text-gray-900 shadow-sm ring-1 ring-gray-200/50"
                   : "text-gray-500 hover:text-gray-700"
               }`}
             >
               {item.label}
-              <span className="ml-1.5 text-xs text-gray-400">{item.count}</span>
+              <span className={`ml-1.5 text-xs font-semibold ${view === item.id ? "text-emerald-600" : "text-gray-400"}`}>
+                {item.count}
+              </span>
             </button>
           ))}
         </div>
@@ -398,7 +403,7 @@ const CandidatesTab = ({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="h-9 px-3 flex-1 sm:flex-none border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+              className="h-9 px-3 flex-1 sm:flex-none border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-shadow"
             >
               <option value="all">All statuses</option>
               <option value="internal_screening">Internal screening</option>
@@ -408,7 +413,7 @@ const CandidatesTab = ({
             </select>
             <button
               onClick={onRunAIMatcher}
-              className="h-9 px-3.5 inline-flex items-center gap-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700"
+              className="h-9 px-4 inline-flex items-center gap-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition-colors shadow-sm"
             >
               <Bot className="w-4 h-4" />
               <span className="hidden sm:inline">AI resume matcher</span>
@@ -448,7 +453,7 @@ const CandidatesTab = ({
                   candidate.aiScore >= 85 ? (
                     <button
                       onClick={() => onTagToPosition(candidate)}
-                      className="h-9 px-3.5 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 whitespace-nowrap"
+                      className="h-9 px-4 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 whitespace-nowrap transition-colors shadow-sm"
                     >
                       Tag to position
                     </button>

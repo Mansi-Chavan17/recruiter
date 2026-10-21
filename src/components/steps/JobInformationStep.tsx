@@ -352,10 +352,6 @@
 
 
 
-
-
-
-
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import {
@@ -374,7 +370,9 @@ import {
   ROLE_TYPE_CARDS,
 } from "../positions/positionForm";
 import AddClientModal from "../clients/AddClientModal";
+import RecruiterMultiSelect from "../positions/RecruiterMultiSelect";
 import type { Client } from "../../types/crm";
+
 
 const JobInformationStep = ({
   form,
@@ -447,6 +445,11 @@ const JobInformationStep = ({
 
           <Field label="Recruiter">
             <TextInput value={form.recruiter} readOnly className="bg-gray-50" />
+            <RecruiterMultiSelect
+              value={form.additionalRecruiters || []}
+              onChange={(value) => set("additionalRecruiters", value)}
+              excludeEmail={form.recruiter}
+            />
           </Field>
 
           <Field label="Status">

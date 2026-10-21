@@ -5351,7 +5351,8 @@
 import { useState, useEffect, useRef } from "react";
 import Header from "../components/Header";
 import { useNavigate, useParams } from "react-router-dom";
-import { Search, Plus, Users, Bot, ArrowLeft, Mail, MapPin, Share2 } from "lucide-react";
+// import { Search, Plus, Users, Bot, ArrowLeft, Mail, MapPin, Share2 } from "lucide-react";
+import { Search, Plus, Users, Bot, ArrowLeft, Mail, MapPin, Share2, UserPlus } from "lucide-react";
 import { positionService } from "../services/positionService";
 import { clientService } from "../services/clientService";
 import Select from "react-select";
@@ -5368,6 +5369,7 @@ import PositionDetail from "../components/positions/Positiondetail";
 import SharePositionModal from "../components/positions/Sharepositionmodal";
 // import { STATUS_OPTIONS } from "../components/positions/positionForm";
 import { STATUS_OPTIONS, toUiPriority, toApiPriority } from "../components/positions/positionForm";
+import TagRecruitersModal from "../components/positions/TagRecruitersModal";
 import FilterSelect from "../components/FilterSelect";
 
 /* ------------------------------------------------------------------ */
@@ -5449,15 +5451,18 @@ const TagCandidateModal = ({
         }
       );
 
-      if (response.status === 201) {
-        alert("Candidate tagged to the position.");
+            if (response.status === 201) {
+        alert(response.message || "Candidate tagged to the position.");
         onTagged();
       } else {
-        alert("Tagging failed: " + (response.message || "Unknown error"));
+        alert(response.message || "Could not tag the candidate.");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error tagging candidate:", error);
-      alert("Could not tag the candidate. Try again.");
+      alert(
+        error?.response?.data?.message ||
+          "Could not tag the candidate. Try again."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -5664,7 +5669,7 @@ const priorityBadgeClass = (priority: string) =>
     ? "bg-yellow-100 text-yellow-800"
     : "bg-green-100 text-green-800";
 
-const PositionTable = ({ positions, onOpen, onTag, onAIMatcher, onShare }) => (
+const PositionTable = ({ positions, onOpen, onTag, onAIMatcher, onShare, onTagRecruiters }) => (
   <>
     {/* Mobile: stacked cards */}
     <div className="md:hidden space-y-3">
@@ -5719,6 +5724,15 @@ const PositionTable = ({ positions, onOpen, onTag, onAIMatcher, onShare }) => (
             >
               AI matcher
             </button>
+            <button
+  className="flex-1 h-9 border border-blue-200 text-xs font-medium text-blue-600 rounded hover:bg-blue-50"
+  onClick={(e) => {
+    e.stopPropagation();
+    onTagRecruiters(position);
+  }}
+>
+  Tag recruiter
+</button>
             <button
               className="h-9 w-9 grid place-items-center rounded border border-gray-200 text-gray-500 shrink-0"
               aria-label="Share this position"
@@ -5811,7 +5825,7 @@ const PositionTable = ({ positions, onOpen, onTag, onAIMatcher, onShare }) => (
                 </td>
 
                 <td className="px-4 py-3 align-top">
-                  <div className="flex items-center justify-end gap-1.5">
+                  <div className="flex flex-wrap items-center justify-end gap-1.5">
                     <button
                       className="h-8 px-3 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-lg border border-emerald-100 hover:bg-emerald-100 whitespace-nowrap"
                       onClick={(e) => {
@@ -5830,6 +5844,15 @@ const PositionTable = ({ positions, onOpen, onTag, onAIMatcher, onShare }) => (
                     >
                       AI matcher
                     </button>
+                    <button
+  className="h-8 px-3 text-xs font-medium text-blue-600 rounded-lg border border-blue-100 hover:bg-blue-50 whitespace-nowrap"
+  onClick={(e) => {
+    e.stopPropagation();
+    onTagRecruiters(position);
+  }}
+>
+  Tag recruiter
+</button>
                     <button
                       className="h-8 w-8 grid place-items-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 shrink-0"
                       title="Share this position"
@@ -5876,6 +5899,7 @@ const PositionManagement = () => {
   const [filterBy, setFilterBy] = useState("all");
   const [statusFilter, setStatusFilter] = useState("Open");
   const [sharePosition, setSharePosition] = useState<any>(null);
+  const [tagRecruiterPosition, setTagRecruiterPosition] = useState<any>(null);
   const [groupBy, setGroupBy] = useState("none");
   const [showTagForm, setShowTagForm] = useState(false);
   const [showAddCandidate, setShowAddCandidate] = useState<any>(false);
@@ -6238,23 +6262,47 @@ const normalizeStatus = (status: any) => {
     alert("Candidate created and tagged.");
   };
 
-  const handleCreatePosition = async (payload: any) => {
+    const handleCreatePosition = async (payload: any, recruiterIds: string[] = []) => {
     try {
       const response = await positionService.createPosition(payload);
 
       if (response.status === 201 || response.status === 200) {
-        alert("Position created.");
+        let message = response.message || "Position created.";
+        const newPositionId = (response.data as any)?.id;
+
+        if (recruiterIds.length) {
+          if (newPositionId) {
+            try {
+              const tagRes = await positionService.tagRecruitersToPosition(
+                String(newPositionId),
+                recruiterIds
+              );
+              message += "\n" + (tagRes.message || "Recruiters tagged.");
+            } catch (err: any) {
+              console.error("Error tagging recruiters after create:", err);
+              message +=
+                "\n" +
+                (err?.response?.data?.message ||
+                  "The recruiters could not be tagged. Tag them from the positions list.");
+            }
+          } else {
+            message +=
+              "\nThe recruiters could not be tagged because the new position ID was not returned. Tag them from the positions list.";
+          }
+        }
+
+        alert(message);
         await loadPositions();
         return true;
       }
 
-      alert(
-        "Could not create the position: " + (response.message || "Unknown error")
-      );
+      alert(response.message || "Could not create the position.");
       return false;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating position:", error);
-      alert("Could not create the position. Try again.");
+      alert(
+        error?.response?.data?.message || "Could not create the position. Try again."
+      );
       return false;
     }
   };
@@ -6424,6 +6472,12 @@ const normalizeStatus = (status: any) => {
           }}
         />
       )}
+            {tagRecruiterPosition && (
+        <TagRecruitersModal
+          position={tagRecruiterPosition}
+          onClose={() => setTagRecruiterPosition(null)}
+        />
+      )}
 
       <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
         {/* Toolbar: search, filters and create action on one line */}
@@ -6508,6 +6562,7 @@ const normalizeStatus = (status: any) => {
                     onTag={openTagForm}
                     onAIMatcher={() => navigate("/ai-matcher")}
                     onShare={(position: any) => setSharePosition(position)}
+                                        onTagRecruiters={(position: any) => setTagRecruiterPosition(position)}
                   />
                 </div>
               )

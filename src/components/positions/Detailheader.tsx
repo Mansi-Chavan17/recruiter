@@ -339,9 +339,8 @@
 
 // export default DetailHeader;
 
-
-
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
     ArrowLeft,
     ChevronLeft,
@@ -357,7 +356,7 @@ import {
 import { displayValue, formatDate, statusTone, daysRemaining } from "../positions/Positionutils";
 import SharePositionModal from "../positions/Sharepositionmodal";
 
-const Dot = () => <span className="text-gray-300">·</span>;
+const Dot = () => <span className="text-gray-300 mx-0.5">·</span>;
 
 const Meta = ({ icon: Icon, label, value }: any) => (
     <span className="inline-flex items-center gap-1.5 text-sm text-gray-500 whitespace-nowrap">
@@ -374,9 +373,9 @@ const IconButton = ({ icon: Icon, onClick, disabled, label }: any) => (
         disabled={disabled}
         aria-label={label}
         title={label}
-        className={`w-9 h-9 grid place-items-center rounded-full border transition ${disabled
+        className={`w-9 h-9 grid place-items-center rounded-full border transition-all duration-150 ${disabled
                 ? "border-gray-100 text-gray-300 cursor-not-allowed"
-                : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                : "border-gray-200 text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700"
             }`}
     >
         <Icon className="w-4 h-4" />
@@ -410,12 +409,13 @@ const DetailHeader = ({
     ];
 
     return (
-        <div className="bg-white border-b border-gray-100">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
+        <div className="bg-white border-b border-gray-200 shadow-sm">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-5 pb-0">
+                {/* Top row */}
                 <div className="flex items-start gap-3">
                     <button
                         onClick={onBack}
-                        className="w-9 h-9 grid place-items-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 shrink-0"
+                        className="w-9 h-9 grid place-items-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 shrink-0 transition-all duration-150"
                         aria-label="Back to positions"
                     >
                         <ArrowLeft className="w-4 h-4" />
@@ -427,16 +427,16 @@ const DetailHeader = ({
                             <span
                                 role="heading"
                                 aria-level={1}
-                                className="text-lg font-semibold text-gray-900 leading-5 break-words"
+                                className="text-xl font-bold text-gray-900 leading-6 break-words tracking-tight"
                             >
                                 {position.positionName}
                             </span>
                             <Dot />
-                            <span className="text-sm font-medium text-gray-600">
+                            <span className="text-sm font-medium text-gray-500">
                                 {displayValue(position.clientName)}
                             </span>
                             <span
-                                className={`inline-flex items-center h-6 px-2.5 rounded-full border text-xs font-medium ${statusTone(
+                                className={`inline-flex items-center h-6 px-2.5 rounded-full border text-xs font-semibold uppercase tracking-wide ${statusTone(
                                     position.status
                                 )}`}
                             >
@@ -445,12 +445,9 @@ const DetailHeader = ({
                         </div>
 
                         {/* Meta line */}
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-1.5">
-                            <span className="text-sm text-gray-500 whitespace-nowrap">
-                                ID:{" "}
-                                <span className="font-medium text-gray-700">
-                                    #{position.id}
-                                </span>
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2">
+                            <span className="text-sm text-gray-400 whitespace-nowrap font-mono">
+                                #{position.id}
                             </span>
                             <Dot />
                             <Meta icon={Briefcase} value={displayValue(position.jobType)} />
@@ -464,11 +461,11 @@ const DetailHeader = ({
                             />
                             {remaining !== null && (
                                 <span
-                                    className={`inline-flex items-center h-5 px-2 rounded-full text-xs font-medium ${remaining < 0
-                                            ? "bg-red-50 text-red-700"
+                                    className={`inline-flex items-center h-5 px-2 rounded-full text-xs font-semibold ${remaining < 0
+                                            ? "bg-red-50 text-red-700 ring-1 ring-red-100"
                                             : remaining <= 7
-                                                ? "bg-amber-50 text-amber-700"
-                                                : "bg-emerald-50 text-emerald-700"
+                                                ? "bg-amber-50 text-amber-700 ring-1 ring-amber-100"
+                                                : "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100"
                                         }`}
                                 >
                                     {remaining < 0
@@ -483,7 +480,7 @@ const DetailHeader = ({
 
                     {/* Actions */}
                     <div className="flex items-center gap-2 shrink-0">
-                        <div className="hidden sm:flex items-center gap-2">
+                        <div className="hidden sm:flex items-center gap-1.5">
                             <IconButton
                                 icon={ChevronLeft}
                                 onClick={onPrev}
@@ -496,7 +493,7 @@ const DetailHeader = ({
                                 disabled={!hasNext}
                                 label="Next position"
                             />
-                            <span className="w-px h-6 bg-gray-200" />
+                            <span className="w-px h-6 bg-gray-200 mx-1" />
                             <IconButton
                                 icon={Share2}
                                 onClick={() => setShareOpen(true)}
@@ -507,7 +504,7 @@ const DetailHeader = ({
                         {!isEditing && (
                             <button
                                 onClick={onEdit}
-                                className="h-9 px-3.5 inline-flex items-center gap-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                className="h-9 px-4 inline-flex items-center gap-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition-colors shadow-sm"
                             >
                                 <Pencil className="w-3.5 h-3.5" />
                                 <span className="hidden sm:inline">Edit position</span>
@@ -517,7 +514,7 @@ const DetailHeader = ({
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-6 mt-4 -mb-px">
+                <div className="flex gap-1 mt-5 -mb-px">
                     {tabs.map((tab) => {
                         const active = activeTab === tab.id;
                         const Icon = tab.icon;
@@ -525,16 +522,16 @@ const DetailHeader = ({
                             <button
                                 key={tab.id}
                                 onClick={() => onTabChange(tab.id)}
-                                className={`inline-flex items-center gap-2 pb-3 border-b-2 text-sm font-medium transition ${active
+                                className={`inline-flex items-center gap-2 px-4 pb-3 border-b-2 text-sm font-medium transition-all duration-150 ${active
                                         ? "border-emerald-600 text-emerald-700"
-                                        : "border-transparent text-gray-500 hover:text-gray-700"
+                                        : "border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-300"
                                     }`}
                             >
-                                <Icon className="w-4 h-4" />
+                                <Icon className={`w-4 h-4 ${active ? "text-emerald-600" : ""}`} />
                                 {tab.label}
                                 {tab.count !== undefined && (
                                     <span
-                                        className={`min-w-[20px] h-5 px-1.5 grid place-items-center rounded-full text-xs font-medium ${active
+                                        className={`min-w-[22px] h-5 px-1.5 grid place-items-center rounded-full text-xs font-semibold ${active
                                                 ? "bg-emerald-100 text-emerald-700"
                                                 : "bg-gray-100 text-gray-500"
                                             }`}

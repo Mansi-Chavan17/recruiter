@@ -529,8 +529,6 @@
 // };
 
 // export default InformationTab;
-
-
 import {
   Info,
   Building2,
@@ -553,22 +551,26 @@ import { displayValue } from "../positions/Positionutils";
 /* ---------- building blocks ---------- */
 
 const Card = ({ title, icon: Icon, children, className = "" }: any) => (
-  <div className={`bg-white rounded-xl border border-gray-100 p-5 ${className}`}>
+  <div className={`bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden ${className}`}>
     {title && (
-      <h3 className="flex items-center gap-2 text-base font-semibold text-gray-900 mb-4">
-        {Icon && <Icon className="w-4 h-4 text-emerald-600" />}
-        {title}
-      </h3>
+      <div className="flex items-center gap-2 px-5 py-3.5 border-b border-gray-100 bg-gray-50/60">
+        {Icon && (
+          <span className="w-7 h-7 rounded-lg bg-emerald-100 grid place-items-center">
+            <Icon className="w-3.5 h-3.5 text-emerald-700" />
+          </span>
+        )}
+        <h3 className="text-sm font-semibold text-gray-900 tracking-tight">{title}</h3>
+      </div>
     )}
-    {children}
+    <div className="p-5">{children}</div>
   </div>
 );
 
 const KeyValue = ({ icon: Icon, label, children }: any) => (
-  <div className="flex items-start gap-3 py-2">
+  <div className="flex items-start gap-3 py-2.5">
     <Icon className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
     <span className="text-sm text-gray-500 w-28 shrink-0">{label}</span>
-    <span className="text-sm text-gray-900 min-w-0 break-words flex-1">
+    <span className="text-sm font-medium text-gray-900 min-w-0 break-words flex-1">
       {children}
     </span>
   </div>
@@ -576,13 +578,15 @@ const KeyValue = ({ icon: Icon, label, children }: any) => (
 
 /** Big-number tile for the facts a recruiter checks first. */
 const Highlight = ({ icon: Icon, label, value }: any) => (
-  <div className="p-3 rounded-lg border border-gray-100 bg-gray-50/50">
-    <span className="flex items-center gap-1.5 text-xs text-gray-500">
-      <Icon className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+  <div className="p-3.5 rounded-xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white hover:shadow-sm transition-shadow duration-150">
+    <span className="flex items-center gap-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">
+      <span className="w-6 h-6 rounded-md bg-emerald-50 grid place-items-center">
+        <Icon className="w-3 h-3 text-emerald-600 shrink-0" />
+      </span>
       {label}
     </span>
     <p
-      className="mt-1.5 text-sm font-semibold text-gray-900 break-words"
+      className="mt-2 text-sm font-bold text-gray-900 break-words leading-snug"
       title={value}
     >
       {value}
@@ -591,13 +595,13 @@ const Highlight = ({ icon: Icon, label, value }: any) => (
 );
 
 const PrefRow = ({ icon: Icon, label, value }: any) => (
-  <div className="flex items-start gap-3 py-2.5">
-    <span className="w-8 h-8 rounded-full bg-emerald-50 grid place-items-center shrink-0">
+  <div className="flex items-start gap-3 py-3">
+    <span className="w-8 h-8 rounded-full bg-emerald-50 grid place-items-center shrink-0 ring-1 ring-emerald-100">
       <Icon className="w-3.5 h-3.5 text-emerald-600" />
     </span>
     <span className="min-w-0">
-      <span className="block text-xs text-gray-500">{label}</span>
-      <span className="block text-sm font-medium text-gray-900 break-words">
+      <span className="block text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</span>
+      <span className="block text-sm font-semibold text-gray-900 break-words mt-0.5">
         {value}
       </span>
     </span>
@@ -652,7 +656,7 @@ const InformationTab = ({ position }: any) => {
               {position.roleDescription}
             </div>
           ) : (
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-gray-400 italic">
               No description added yet. Use Edit position to write one.
             </p>
           )}
@@ -662,7 +666,7 @@ const InformationTab = ({ position }: any) => {
       {/* ---------------- sidebar ---------------- */}
       <div className="space-y-5">
         <Card title="Job detail" icon={Briefcase}>
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-gray-100">
             <KeyValue icon={Building2} label="Client">
               {displayValue(position.clientName)}
             </KeyValue>
@@ -688,7 +692,7 @@ const InformationTab = ({ position }: any) => {
         </Card>
 
         <Card title="Interview process" icon={UserCheck}>
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-gray-100">
             <KeyValue icon={Layers} label="Rounds">
               {displayValue(position.rounds)}
             </KeyValue>
@@ -707,9 +711,9 @@ const InformationTab = ({ position }: any) => {
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-emerald-700 hover:underline"
+                  className="text-emerald-600 hover:text-emerald-700 hover:underline font-medium"
                 >
-                  View profile
+                  View profile →
                 </a>
               ) : (
                 "N/A"
@@ -719,7 +723,7 @@ const InformationTab = ({ position }: any) => {
         </Card>
 
         <Card title="Contacts" icon={Users}>
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-gray-100">
             <KeyValue icon={UserCheck} label="Recruiter">
               {displayValue(position.recruiter)}
             </KeyValue>
@@ -733,12 +737,12 @@ const InformationTab = ({ position }: any) => {
         </Card>
 
         {/* Internal-only sourcing preferences */}
-        <div className="rounded-xl border border-emerald-100 overflow-hidden">
-          <p className="flex items-start gap-2 px-4 py-2.5 bg-emerald-50/70 text-xs leading-relaxed text-emerald-900">
+        <div className="rounded-xl border border-emerald-200 overflow-hidden shadow-sm">
+          <p className="flex items-start gap-2 px-4 py-2.5 bg-emerald-50 text-xs leading-relaxed text-emerald-800 font-medium border-b border-emerald-100">
             <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
             Internal sourcing only — never shown to candidates.
           </p>
-          <div className="bg-white p-4 divide-y divide-gray-50">
+          <div className="bg-white p-4 divide-y divide-gray-100">
             <PrefRow
               icon={Factory}
               label="Preferred industry"

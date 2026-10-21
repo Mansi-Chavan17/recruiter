@@ -47,22 +47,23 @@ const EditPositionForm = ({
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100">
-      <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
-        <h2 className="text-base font-semibold text-gray-900">
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      {/* Sticky header bar */}
+      <div className="flex items-center justify-between px-5 sm:px-7 py-4 border-b border-gray-200 bg-gray-50/60">
+        <h2 className="text-base font-bold text-gray-900 tracking-tight">
           Edit position
         </h2>
-        <div className="flex gap-2">
+        <div className="flex gap-2.5">
           <button
             onClick={onCancel}
-            className="h-9 px-3.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="h-9 px-4 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-800 hover:border-gray-300 transition-all duration-150"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="h-9 px-4 inline-flex items-center gap-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 disabled:bg-emerald-300"
+            className="h-9 px-5 inline-flex items-center gap-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 disabled:bg-emerald-300 transition-colors shadow-sm"
           >
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             {saving ? "Saving..." : "Save changes"}
