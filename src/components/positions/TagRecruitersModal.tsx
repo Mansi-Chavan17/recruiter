@@ -1,10 +1,55 @@
 import { useRef, useState } from "react";
 import AsyncSelect from "react-select/async";
+import { X, Users } from "lucide-react";
 import { positionService } from "../../services/positionService";
 
 type Props = {
   position: { id: string | number; positionName: string };
   onClose: () => void;
+};
+
+/* ---- teal react-select styles ---- */
+const tealSelectStyles = {
+  control: (base: any, state: any) => ({
+    ...base,
+    minHeight: "40px",
+    borderRadius: "0.5rem",
+    fontSize: "0.875rem",
+    borderColor: state.isFocused ? "#0d9488" : "#d1d5db",
+    boxShadow: state.isFocused ? "0 0 0 2px rgba(13, 148, 136, 0.25)" : "none",
+    "&:hover": { borderColor: "#0d9488" },
+  }),
+  placeholder: (base: any) => ({ ...base, color: "#9ca3af" }),
+  menu: (base: any) => ({ ...base, fontSize: "0.875rem", zIndex: 9999 }),
+  menuPortal: (base: any) => ({ ...base, zIndex: 9999 }),
+  option: (base: any, state: any) => ({
+    ...base,
+    backgroundColor: state.isSelected
+      ? "#0d9488"
+      : state.isFocused
+      ? "#f3f4f6"
+      : "white",
+    color: state.isSelected ? "white" : "#111827",
+    cursor: "pointer",
+    "&:active": { backgroundColor: "#e5e7eb" },
+  }),
+  multiValue: (base: any) => ({
+    ...base,
+    backgroundColor: "#e5e7eb",
+    borderRadius: "0.375rem",
+  }),
+  multiValueLabel: (base: any) => ({
+    ...base,
+    color: "#374151",
+    fontSize: "0.8125rem",
+    fontWeight: 500,
+  }),
+  multiValueRemove: (base: any) => ({
+    ...base,
+    color: "#6b7280",
+    borderRadius: "0 0.375rem 0.375rem 0",
+    "&:hover": { backgroundColor: "#d1d5db", color: "#111827" },
+  }),
 };
 
 const TagRecruitersModal = ({ position, onClose }: Props) => {
@@ -81,37 +126,41 @@ const TagRecruitersModal = ({ position, onClose }: Props) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 sm:p-4">
-      <div className="bg-white w-full sm:max-w-md h-[70vh] sm:h-auto sm:max-h-[90vh] rounded-t-2xl sm:rounded-lg shadow-xl flex flex-col">
-        <div className="flex justify-between items-center px-4 sm:px-6 py-4 border-b border-gray-200 shrink-0">
-          <h2 className="text-lg sm:text-xl font-bold text-gray-800">
-            Tag recruiters
-          </h2>
+      <div className="bg-white w-full sm:max-w-md h-auto sm:max-h-[90vh] rounded-t-2xl sm:rounded-2xl shadow-xl flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="shrink-0 flex justify-between items-center px-5 sm:px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">
+              Tag recruiters
+            </h2>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Assign recruiters to this position
+            </p>
+          </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
             aria-label="Close"
+            className="h-8 w-8 grid place-items-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
-          <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-4">
+          <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-5 space-y-5">
+            {/* Position name (read-only) */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Position name
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Position name</label>
               <input
                 type="text"
                 readOnly
                 value={position.positionName}
-                className="w-full h-10 px-3 border border-gray-300 rounded-md bg-gray-50"
+                className="w-full h-10 px-3 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-900 cursor-default focus:outline-none"
               />
             </div>
 
+            {/* Recruiter search */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Recruiters <span className="text-red-500">*</span>
@@ -130,38 +179,43 @@ const TagRecruitersModal = ({ position, onClose }: Props) => {
                     : "No recruiters found"
                 }
                 loadingMessage={() => "Searching..."}
-                styles={{
-                  control: (base) => ({
-                    ...base,
-                    minHeight: "40px",
-                    borderColor: "#d1d5db",
-                    "&:hover": { borderColor: "#3b82f6" },
-                  }),
-                  menu: (base) => ({ ...base, zIndex: 9999 }),
-                }}
+                styles={tealSelectStyles}
+                menuPortalTarget={document.body}
+                menuPosition="fixed"
                 components={{
                   DropdownIndicator: () => null,
                   IndicatorSeparator: () => null,
                 }}
               />
-              <p className="text-xs text-gray-500 mt-1">
-                You can pick more than one recruiter.
+              <p className="text-xs text-gray-500 mt-1.5">
+                You can select more than one recruiter.
               </p>
             </div>
+
+            {/* Selected count */}
+            {selected.length > 0 && (
+              <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
+                <Users className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-gray-700 font-medium">
+                  {selected.length} recruiter{selected.length !== 1 ? "s" : ""} selected
+                </span>
+              </div>
+            )}
           </div>
 
-          <div className="flex gap-3 px-4 sm:px-6 py-3 border-t border-gray-200 shrink-0 bg-white sm:rounded-b-lg">
+          {/* Footer */}
+          <div className="shrink-0 flex gap-3 px-5 sm:px-6 py-3.5 border-t border-gray-200 bg-gray-50">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 sm:flex-none sm:ml-auto px-4 h-11 sm:h-10 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              className="flex-1 sm:flex-none sm:ml-auto h-10 px-4 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="flex-1 sm:flex-none px-4 h-11 sm:h-10 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-400"
+              disabled={isSubmitting || selected.length === 0}
+              className="flex-1 sm:flex-none h-10 px-5 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors"
             >
               {isSubmitting ? "Tagging..." : "Tag recruiters"}
             </button>

@@ -5342,18 +5342,12 @@
 
 
 
-
-
-
-
-
-
 import { useState, useEffect, useRef } from "react";
 import Header from "../components/Header";
 import { useNavigate, useParams } from "react-router-dom";
-// import { Search, Plus, Users, Bot, ArrowLeft, Mail, MapPin, Share2 } from "lucide-react";
-import { Search, Plus, Users, Bot, ArrowLeft, Mail, MapPin, Share2, UserPlus } from "lucide-react";
+import { Search, Plus, Users, Bot, ArrowLeft, Mail, MapPin, Share2, UserPlus, X } from "lucide-react";
 import { positionService } from "../services/positionService";
+import { applicantService } from "../services/applicantService";
 import { clientService } from "../services/clientService";
 import Select from "react-select";
 import {
@@ -5367,10 +5361,10 @@ import AsyncSelect from "react-select/async";
 import CreatePositionWizard from "../components/positions/CreatePositionWizard";
 import PositionDetail from "../components/positions/Positiondetail";
 import SharePositionModal from "../components/positions/Sharepositionmodal";
-// import { STATUS_OPTIONS } from "../components/positions/positionForm";
 import { STATUS_OPTIONS, toUiPriority, toApiPriority } from "../components/positions/positionForm";
 import TagRecruitersModal from "../components/positions/TagRecruitersModal";
 import FilterSelect from "../components/FilterSelect";
+import AddCandidateModal from "../components/candidates/AddCandidateModal";
 
 /* ------------------------------------------------------------------ */
 /* Shared helpers                                                      */
@@ -5381,6 +5375,33 @@ import FilterSelect from "../components/FilterSelect";
 /* every keystroke, which was stealing focus from the inputs)          */
 /* ------------------------------------------------------------------ */
 
+/* ---- teal-themed react-select styles shared by Tag modal ---- */
+const tealSelectStyles = {
+  control: (base: any, state: any) => ({
+    ...base,
+    minHeight: "40px",
+    borderRadius: "0.5rem",
+    fontSize: "0.875rem",
+    borderColor: state.isFocused ? "#14b8a6" : "#d1d5db",
+    boxShadow: state.isFocused ? "0 0 0 2px rgba(20, 184, 166, 0.3)" : "none",
+    "&:hover": { borderColor: "#14b8a6" },
+  }),
+  placeholder: (base: any) => ({ ...base, color: "#9ca3af" }),
+  menu: (base: any) => ({ ...base, fontSize: "0.875rem", zIndex: 9999 }),
+  menuPortal: (base: any) => ({ ...base, zIndex: 9999 }),
+  option: (base: any, state: any) => ({
+    ...base,
+    backgroundColor: state.isSelected ? "#0d9488" : state.isFocused ? "#f0fdfa" : "white",
+    color: state.isSelected ? "white" : "#374151",
+    "&:active": { backgroundColor: "#ccfbf1" },
+  }),
+};
+
+const inputClass =
+  "w-full h-10 px-3 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition";
+
+const labelClass = "block text-sm font-medium text-gray-700 mb-1";
+
 const TagCandidateModal = ({
   onClose,
   tagFormData,
@@ -5389,8 +5410,30 @@ const TagCandidateModal = ({
   isSubmitting,
   setIsSubmitting,
   onTagged,
-}) => {
+  recruiter,
+  candidates,
+}: any) => {
   const searchTimeout = useRef<any>(null);
+  const [showAddCandidate, setShowAddCandidate] = useState(false);
+  const [addCandidateFormData, setAddCandidateFormData] = useState<any>({
+    name: "",
+    email: "",
+    phone: "",
+    city: "",
+    currentDesignation: "",
+    currentOrganization: "",
+    currentCTC: "",
+    expectedCTC: "",
+    noticePeriod: "",
+    education: "",
+    gender: "",
+    engagementType: "",
+    openToRelocation: false,
+    specialComments: "",
+    recruiter: recruiter || "",
+    resumeFile: null,
+  });
+  const [isAddingCandidate, setIsAddingCandidate] = useState(false);
 
   const debouncedLoadOptions = (inputValue: string, callback: any) => {
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
@@ -5451,7 +5494,7 @@ const TagCandidateModal = ({
         }
       );
 
-            if (response.status === 201) {
+      if (response.status === 201) {
         alert(response.message || "Candidate tagged to the position.");
         onTagged();
       } else {
@@ -5468,189 +5511,317 @@ const TagCandidateModal = ({
     }
   };
 
+  /* When a candidate is added via AddCandidateModal, auto-select them */
+  const handleAddCandidateSubmit = async () => {
+    if (!addCandidateFormData.name || !addCandidateFormData.email) {
+      alert("Name and email are required.");
+      return;
+    }
+
+    if (!addCandidateFormData.resumeFile) {
+      alert("Please upload a resume file for new candidates!");
+      return;
+    }
+
+    setIsAddingCandidate(true);
+    try {
+      /* Build FormData exactly like CandidateManagement does */
+      const formPayload = new FormData();
+
+      if (addCandidateFormData.resumeFile) {
+        formPayload.append("resume", addCandidateFormData.resumeFile);
+      }
+
+      const candidateData = {
+        name: addCandidateFormData.name,
+        email: addCandidateFormData.email,
+        phone: addCandidateFormData.phone,
+        currentDesignation: addCandidateFormData.currentDesignation,
+        currentOrganization: addCandidateFormData.currentOrganization,
+        currentCTC: addCandidateFormData.currentCTC
+          ? Number(addCandidateFormData.currentCTC)
+          : undefined,
+        expectedCTC: addCandidateFormData.expectedCTC
+          ? Number(addCandidateFormData.expectedCTC)
+          : undefined,
+        city: addCandidateFormData.city,
+        noticePeriod: addCandidateFormData.noticePeriod
+          ? Number(addCandidateFormData.noticePeriod)
+          : undefined,
+        education: addCandidateFormData.education,
+        gender: addCandidateFormData.gender,
+        engagementType: addCandidateFormData.engagementType,
+        openToRelocation: addCandidateFormData.openToRelocation,
+        specialComments: addCandidateFormData.specialComments,
+        recruiter: addCandidateFormData.recruiter || recruiter || "",
+      };
+
+      formPayload.append("data", JSON.stringify(candidateData));
+
+      const response = await applicantService.addOrUpdate(formPayload);
+
+      const newCandidate = response.data;
+      /* Auto-select the newly created candidate in the tag form */
+      setTagFormData((prev: any) => ({
+        ...prev,
+        applicant: `${newCandidate.name} (${newCandidate.email})`,
+        candidateId: newCandidate.id,
+      }));
+      setShowAddCandidate(false);
+      /* Reset form */
+      setAddCandidateFormData({
+        name: "",
+        email: "",
+        phone: "",
+        city: "",
+        currentDesignation: "",
+        currentOrganization: "",
+        currentCTC: "",
+        expectedCTC: "",
+        noticePeriod: "",
+        education: "",
+        gender: "",
+        engagementType: "",
+        openToRelocation: false,
+        specialComments: "",
+        recruiter: recruiter || "",
+        resumeFile: null,
+      });
+      alert("Candidate added successfully! Now click 'Tag candidate' to tag them to this position.");
+    } catch (error: any) {
+      console.error("Error creating candidate:", error);
+      alert(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to save candidate. Please try again."
+      );
+    } finally {
+      setIsAddingCandidate(false);
+    }
+  };
+
+  const openAddCandidate = () => setShowAddCandidate(true);
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 sm:p-4">
-      <div className="bg-white w-full sm:max-w-md h-[92vh] sm:h-auto sm:max-h-[90vh] rounded-t-2xl sm:rounded-lg shadow-xl flex flex-col">
-        <div className="flex justify-between items-center px-4 sm:px-6 py-4 border-b border-gray-200 shrink-0">
-          <h2 className="text-lg sm:text-xl font-bold text-gray-800">
-            Tag candidate
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+    <>
+      {/* Add Candidate sub-modal — rendered at z-[60] so it sits above the tag modal (z-50) */}
+      {showAddCandidate && (
+        <div className="relative z-[60]">
+          <AddCandidateModal
+            editingCandidate={null}
+            formData={addCandidateFormData}
+            isSubmitting={isAddingCandidate}
+            onFormChange={setAddCandidateFormData}
+            onSubmit={handleAddCandidateSubmit}
+            onClose={() => setShowAddCandidate(false)}
+            onSearchCandidate={() => null}
+            onUpdateCandidate={() => {}}
+            onCreateCandidate={(email: string) => {
+              setAddCandidateFormData((prev: any) => ({ ...prev, email }));
+            }}
+            candidates={candidates || []}
+          />
         </div>
+      )}
 
-        <form
-          onSubmit={handleSubmit}
-          className="flex-1 flex flex-col min-h-0"
-        >
-          <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Position name <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              readOnly
-              value={tagFormData.positionName}
-              className="w-full h-10 px-3 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Applicant <span className="text-red-500">*</span>
-            </label>
-            <AsyncSelect
-              cacheOptions
-              defaultOptions={false}
-              loadOptions={debouncedLoadOptions}
-              isSearchable
-              isClearable
-              placeholder="Search by name or email..."
-              noOptionsMessage={({ inputValue }) =>
-                !inputValue || inputValue.length < 2
-                  ? "Type at least 2 characters"
-                  : "No candidates found"
-              }
-              loadingMessage={() => "Searching..."}
-              onChange={handleCandidateSelect}
-              value={
-                tagFormData.candidateId
-                  ? {
-                      value: tagFormData.candidateId,
-                      label: tagFormData.applicant,
-                    }
-                  : null
-              }
-              styles={{
-                control: (base) => ({
-                  ...base,
-                  minHeight: "40px",
-                  borderColor: "#d1d5db",
-                     "&:hover": { borderColor: "#14b8a6" },
-                }),
-                menu: (base) => ({ ...base, zIndex: 9999 }),
-              }}
-              components={{
-                DropdownIndicator: () => null,
-                IndicatorSeparator: () => null,
-              }}
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Type at least 2 characters to search.
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Recruiter <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={tagFormData.recruiter}
-              onChange={(e) =>
-                setTagFormData((prev: any) => ({
-                  ...prev,
-                  recruiter: e.target.value,
-                }))
-              }
-              className="w-full h-10 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Recruiter email"
-            />
-          </div>
-
-          <div className="flex items-start">
-            <input
-              type="checkbox"
-              id="immediateJoiner"
-              checked={tagFormData.immediateJoiner}
-              onChange={(e) =>
-                setTagFormData((prev: any) => ({
-                  ...prev,
-                  immediateJoiner: e.target.checked,
-                }))
-              }
-              className="mt-1 mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-            />
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 sm:p-4">
+        <div className="bg-white w-full sm:max-w-md h-[92vh] sm:h-auto sm:max-h-[90vh] rounded-t-2xl sm:rounded-2xl shadow-xl flex flex-col overflow-hidden">
+          {/* Header */}
+          <div className="shrink-0 flex justify-between items-center px-5 sm:px-6 py-4 border-b border-gray-200 bg-gray-50/60">
             <div>
-              <label
-                htmlFor="immediateJoiner"
-                className="text-sm font-medium text-gray-700"
-              >
-                Immediate joiner
-              </label>
-              <p className="text-xs text-gray-500">
-                Tick this if the candidate can join within 15 days.
+              <h2 className="text-lg font-semibold text-gray-900">
+                Tag candidate
+              </h2>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Search an existing candidate or add a new one
               </p>
             </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Status <span className="text-red-500">*</span>
-            </label>
-            <Select
-              options={candidateStatusOptions}
-              isSearchable
-              placeholder="Select status..."
-              value={
-                candidateStatusOptions.find(
-                  (opt: any) => opt.value === tagFormData.status
-                ) || null
-              }
-              onChange={(selected: any) =>
-                setTagFormData((prev: any) => ({
-                  ...prev,
-                  status: selected?.value,
-                }))
-              }
-              styles={{
-                control: (base) => ({ ...base, minHeight: "40px" }),
-                menu: (base) => ({ ...base, zIndex: 9999 }),
-              }}
-            />
-          </div>
-
-          </div>
-
-          <div className="flex gap-3 px-4 sm:px-6 py-3 border-t border-gray-200 shrink-0 bg-white sm:rounded-b-lg">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 sm:flex-none sm:ml-auto px-4 h-11 sm:h-10 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              aria-label="Close"
+              className="h-8 w-8 grid place-items-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
             >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex-1 sm:flex-none px-4 h-11 sm:h-10 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-400"
-            >
-              {isSubmitting ? "Tagging..." : "Tag candidate"}
+              <X className="w-4 h-4" />
             </button>
           </div>
-        </form>
+
+          <form
+            onSubmit={handleSubmit}
+            className="flex-1 flex flex-col min-h-0"
+          >
+            <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-5 space-y-5">
+              {/* Position name */}
+              <div>
+                <label className={labelClass}>
+                  Position name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  readOnly
+                  value={tagFormData.positionName}
+                  className={`${inputClass} bg-gray-50 text-gray-600 cursor-default`}
+                />
+              </div>
+
+              {/* Applicant search */}
+              <div>
+                <label className={labelClass}>
+                  Applicant <span className="text-red-500">*</span>
+                </label>
+                <AsyncSelect
+                  cacheOptions
+                  defaultOptions={false}
+                  loadOptions={debouncedLoadOptions}
+                  isSearchable
+                  isClearable
+                  placeholder="Search by name or email..."
+                  noOptionsMessage={({ inputValue }) =>
+                    !inputValue || inputValue.length < 2
+                      ? "Type at least 2 characters"
+                      : "No candidates found"
+                  }
+                  loadingMessage={() => "Searching..."}
+                  onChange={handleCandidateSelect}
+                  value={
+                    tagFormData.candidateId
+                      ? {
+                          value: tagFormData.candidateId,
+                          label: tagFormData.applicant,
+                        }
+                      : null
+                  }
+                  menuPortalTarget={document.body}
+                  menuPosition="fixed"
+                  styles={tealSelectStyles}
+                  components={{
+                    DropdownIndicator: () => null,
+                    IndicatorSeparator: () => null,
+                  }}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Type at least 2 characters to search.
+                </p>
+              </div>
+
+              {/* Add candidate option */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                  <div className="w-full border-t border-gray-200" />
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="bg-white px-3 text-xs text-gray-400 uppercase tracking-wide">
+                    or
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={openAddCandidate}
+                className="w-full flex items-center justify-center gap-2 h-11 rounded-lg border-2 border-dashed border-teal-300 text-teal-700 text-sm font-medium bg-teal-50/40 hover:bg-teal-50 hover:border-teal-400 transition-colors"
+              >
+                <UserPlus className="w-4 h-4" />
+                Add new candidate
+              </button>
+
+              {/* Recruiter */}
+              <div>
+                <label className={labelClass}>
+                  Recruiter <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={tagFormData.recruiter}
+                  onChange={(e) =>
+                    setTagFormData((prev: any) => ({
+                      ...prev,
+                      recruiter: e.target.value,
+                    }))
+                  }
+                  className={inputClass}
+                  placeholder="Recruiter email"
+                />
+              </div>
+
+              {/* Immediate joiner */}
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 border border-gray-100">
+                <input
+                  type="checkbox"
+                  id="immediateJoiner"
+                  checked={tagFormData.immediateJoiner}
+                  onChange={(e) =>
+                    setTagFormData((prev: any) => ({
+                      ...prev,
+                      immediateJoiner: e.target.checked,
+                    }))
+                  }
+                  className="mt-0.5 h-4 w-4 rounded border-gray-300 accent-teal-600"
+                />
+                <div>
+                  <label
+                    htmlFor="immediateJoiner"
+                    className="text-sm font-medium text-gray-700 cursor-pointer"
+                  >
+                    Immediate joiner
+                  </label>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Tick this if the candidate can join within 15 days.
+                  </p>
+                </div>
+              </div>
+
+              {/* Status */}
+              <div>
+                <label className={labelClass}>
+                  Status <span className="text-red-500">*</span>
+                </label>
+                <Select
+                  options={candidateStatusOptions}
+                  isSearchable
+                  placeholder="Select status..."
+                  value={
+                    candidateStatusOptions.find(
+                      (opt: any) => opt.value === tagFormData.status
+                    ) || null
+                  }
+                  onChange={(selected: any) =>
+                    setTagFormData((prev: any) => ({
+                      ...prev,
+                      status: selected?.value,
+                    }))
+                  }
+                  menuPortalTarget={document.body}
+                  menuPosition="fixed"
+                  menuPlacement="auto"
+                  styles={tealSelectStyles}
+                />
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="shrink-0 flex justify-end gap-3 px-5 sm:px-6 py-3.5 border-t border-gray-200 bg-white">
+              <button
+                type="button"
+                onClick={onClose}
+                className="h-10 px-4 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="h-10 px-6 text-sm font-medium bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              >
+                {isSubmitting ? "Tagging..." : "Tag candidate"}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
@@ -5759,10 +5930,10 @@ const PositionTable = ({ positions, onOpen, onTag, onAIMatcher, onShare, onTagRe
     <div className="w-full">
       <table className="w-full table-fixed divide-y divide-gray-200">
         <colgroup>
-          <col className="w-[30%]" />
-          <col className="w-[24%]" />
+          <col className="w-[25%]" />
           <col className="w-[20%]" />
-          <col className="w-[26%]" />
+          <col className="w-[17%]" />
+          <col className="w-[38%]" />
         </colgroup>
         <thead className="bg-gray-50">
           <tr>
@@ -5825,7 +5996,7 @@ const PositionTable = ({ positions, onOpen, onTag, onAIMatcher, onShare, onTagRe
                 </td>
 
                 <td className="px-4 py-3 align-top">
-                  <div className="flex flex-wrap items-center justify-end gap-1.5">
+                  <div className="flex items-center justify-end gap-1.5 flex-nowrap">
                     <button
                       className="h-8 px-3 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-lg border border-emerald-100 hover:bg-emerald-100 whitespace-nowrap"
                       onClick={(e) => {
@@ -6466,6 +6637,8 @@ const normalizeStatus = (status: any) => {
           selectedPositionId={tagPositionId}
           isSubmitting={isSubmittingTag}
           setIsSubmitting={setIsSubmittingTag}
+          recruiter={recruiter}
+          candidates={candidates}
           onTagged={() => {
             closeTagForm();
             loadPositions();
@@ -6488,7 +6661,7 @@ const normalizeStatus = (status: any) => {
               <input
                 type="text"
                 placeholder="Search by position, client, location, priority or experience"
-                className="w-full h-10 pl-10 pr-4 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full h-10 pl-10 pr-4 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -6530,7 +6703,7 @@ const normalizeStatus = (status: any) => {
 />
 
             <button
-              className="h-10 px-4 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shrink-0"
+              className="h-10 px-4 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors flex items-center justify-center gap-2 shrink-0"
               onClick={() => setShowCreatePosition(true)}
             >
               <Plus className="w-4 h-4" />

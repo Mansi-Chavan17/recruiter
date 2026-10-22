@@ -2548,6 +2548,16 @@
 // export default SubmissionGroupDetail;
 
 
+
+
+
+
+
+
+
+
+
+
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header";
@@ -2715,7 +2725,7 @@ const SubmissionGroupDetail = () => {
                 <p className="text-gray-400 text-sm mt-2">Open it again from Submission Management.</p>
                 <button
                   onClick={() => navigate("/submission-management")}
-                  className="mt-4 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  className="mt-4 px-4 py-2 text-sm bg-teal-600 text-white rounded-lg hover:bg-teal-700"
                 >
                   Go to Submission Management
                 </button>
@@ -2825,7 +2835,7 @@ const SubmissionGroupDetail = () => {
   const SortHeader = ({ field, label }: { field: SortField; label: string }) => (
     <button
       onClick={() => handleSort(field)}
-      className="flex items-center gap-1.5 text-gray-700 hover:text-blue-600 transition-colors font-medium"
+      className="flex items-center gap-1.5 text-gray-700 hover:text-teal-600 transition-colors font-medium"
     >
       {label}
     </button>
@@ -2856,7 +2866,7 @@ const SubmissionGroupDetail = () => {
           <div className="mb-6 flex items-center gap-4">
             <button
               onClick={goBack}
-              className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+              className="flex items-center gap-2 text-sm text-teal-600 hover:text-teal-700 font-medium"
             >
               ← Back
             </button>
@@ -2865,17 +2875,17 @@ const SubmissionGroupDetail = () => {
           {/* Top Section: Group name */}
           <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-200">
             <div className="flex items-center gap-3 mb-4">
-              <Building size={20} className="text-blue-600" />
+              <Building size={20} className="text-teal-600" />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">{group.groupName}</h1>
                 <p className="text-sm text-gray-500 mt-1">
-                  Grouping by:{" "}
-                  <span className="font-medium text-gray-900">{group.groupBy.replace(/_/g, " ")}</span>
+                  Client:{" "}
+                  <span className="font-medium text-gray-900">{submissions[0]?.client_name || "N/A"}</span>
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2 text-xs text-gray-600">
-              <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">
+              <span className="inline-flex items-center px-3 py-1 rounded-full bg-teal-100 text-teal-700 font-medium">
                 {filteredSubmissions.length} submissions
               </span>
             </div>
@@ -2902,7 +2912,7 @@ const SubmissionGroupDetail = () => {
           {loading && (
             <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
               <div className="bg-white rounded-xl p-6 shadow-xl flex flex-col items-center gap-3">
-                <div className="animate-spin rounded-full h-10 w-10 border-[3px] border-gray-200 border-t-blue-600"></div>
+                <div className="animate-spin rounded-full h-10 w-10 border-[3px] border-gray-200 border-t-teal-600"></div>
                 <p className="text-sm text-gray-600 font-medium">Loading submissions…</p>
               </div>
             </div>
@@ -2920,7 +2930,7 @@ const SubmissionGroupDetail = () => {
                   }}
                   className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-all ${
                     activeTab === tab.id
-                      ? "border-blue-600 text-blue-600 bg-blue-50/50"
+                      ? "border-teal-600 text-teal-600 bg-teal-50/50"
                       : "border-transparent text-gray-600 hover:text-gray-900"
                   }`}
                 >
@@ -2945,7 +2955,7 @@ const SubmissionGroupDetail = () => {
                     setSearchTerm(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className="w-full pl-10 pr-9 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-9 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   placeholder="Search by name, email, or recruiter…"
                 />
                 {searchTerm && (
@@ -2994,8 +3004,8 @@ const SubmissionGroupDetail = () => {
                         >
                           <td className="px-3 py-2">
                             <div className="flex items-center gap-2">
-                              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 shrink-0">
-                                <User size={12} className="text-blue-600" />
+                              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-100 shrink-0">
+                                <User size={12} className="text-teal-600" />
                               </div>
                               <div className="min-w-0">
                                 <div className="text-xs font-medium text-gray-900 truncate">
@@ -3009,7 +3019,7 @@ const SubmissionGroupDetail = () => {
                               <a
                                 href={`mailto:${submission.email}`}
                                 onClick={(e) => e.stopPropagation()}
-                                className="text-blue-600 hover:text-blue-700 hover:underline"
+                                className="text-teal-600 hover:text-teal-700 hover:underline"
                               >
                                 {submission.email || "N/A"}
                               </a>
@@ -3041,7 +3051,7 @@ const SubmissionGroupDetail = () => {
                                 e.stopPropagation();
                                 openCandidateDetail(submission);
                               }}
-                              className="text-blue-600 hover:text-blue-800 text-xs font-medium px-2 py-1 rounded-lg border border-blue-300 hover:bg-blue-50 transition-colors whitespace-nowrap"
+                              className="text-teal-600 hover:text-teal-800 text-xs font-medium px-2 py-1 rounded-lg border border-teal-300 hover:bg-teal-50 transition-colors whitespace-nowrap"
                             >
                               View Tracker
                             </button>
@@ -3095,7 +3105,7 @@ const SubmissionGroupDetail = () => {
                               onClick={() => setCurrentPage(page)}
                               className={`w-8 h-8 text-xs rounded-lg transition-colors ${
                                 currentPage === page
-                                  ? "bg-blue-600 text-white font-medium"
+                                  ? "bg-teal-600 text-white font-medium"
                                   : "border border-gray-200 hover:bg-gray-50 text-gray-700"
                               }`}
                             >
