@@ -65,5 +65,12 @@ UPDATE_BD_MEETING: (id: string) => `/api/bd/meetings/${id}`,
 DELETE_BD_MEETING: (id: string) => `/api/bd/meetings/${id}`,
 FETCH_BD_MEETING_OPTIONS: "/api/bd/meetings/meta/options",
 
+// new endpoints for crm
+FETCH_CRM_OFFERS: "/api/crm/offers",
+FETCH_SINGLE_CRM_OFFER: (id: string) => `/api/crm/offers/${id}`,
+UPDATE_CRM_OFFER: (id: string) => `/api/crm/offers/${id}`,
+FETCH_CRM_CLIENTS: "/api/crm/clients",
+FETCH_SINGLE_CRM_CLIENT: (id: string) => `/api/crm/clients/${id}`,
+UPDATE_CRM_CLIENT: (id: string) => `/api/crm/clients/${id}`,
 };
 

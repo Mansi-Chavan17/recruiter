@@ -1374,12 +1374,623 @@
 
 
 
-import { useState, useMemo, useEffect } from "react";
+// import { useState, useMemo, useEffect } from "react";
+// import { useLocation } from "react-router-dom";
+// import Header from "../components/Header";
+// import AddClientModal from "../components/clients/AddClientModal";
+// import FilterSelect from "../components/FilterSelect";
+// import { crmService } from "../services/crmService";
+// import type {
+//   Client,
+//   RevenueRow,
+//   Offer,
+//   PositionPerformance,
+// } from "../types/crm";
+
+// // ─── Utility Helpers ─────────────────────────────────────────────────────────
+
+// function formatINR(amount: number): string {
+//   if (amount >= 100000) {
+//     return `${(amount / 100000).toFixed(1)}L`;
+//   }
+//   return new Intl.NumberFormat("en-IN").format(amount);
+// }
+
+// function getInvoiceBadgeClass(status: string): string {
+//   switch (status) {
+//     case "Paid": return "bg-green-100 text-green-800";
+//     case "Sent": return "bg-blue-100 text-blue-800";
+//     case "Drafted": return "bg-gray-100 text-gray-600";
+//     case "Overdue": return "bg-red-100 text-red-800";
+//     default: return "bg-gray-100 text-gray-600";
+//   }
+// }
+
+// function getOfferStatusBadgeClass(status: string): string {
+//   switch (status) {
+//     case "Accepted": return "bg-green-100 text-green-800";
+//     case "Negotiation": return "bg-yellow-100 text-yellow-800";
+//     case "Extended": return "bg-blue-100 text-blue-800";
+//     case "Declined": return "bg-red-100 text-red-800";
+//     case "Revoked": return "bg-red-100 text-red-800";
+//     case "Ghosted": return "bg-gray-100 text-gray-600";
+//     default: return "bg-gray-100 text-gray-600";
+//   }
+// }
+
+// function getStatusBadgeClass(status: string): string {
+//   switch (status) {
+//     case "Active": return "bg-green-100 text-green-800";
+//     case "Inactive": return "bg-gray-100 text-gray-600";
+//     case "New": return "bg-blue-100 text-blue-800";
+//     default: return "bg-gray-100 text-gray-600";
+//   }
+// }
+
+// // ─── Sub-Components ──────────────────────────────────────────────────────────
+
+// // ---------- 1. Client Details ----------
+
+// function ClientDetails() {
+//   const [clients, setClients] = useState<Client[]>([]);
+//   const [positionPerformanceData, setPositionPerformanceData] = useState<PositionPerformance[]>([]);
+//   const [revenueData, setRevenueData] = useState<RevenueRow[]>([]);
+//   const [loading, setLoading] = useState(true);
+//   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+//   const [searchTerm, setSearchTerm] = useState("");
+//   const [detailTab, setDetailTab] = useState<"overview" | "contacts" | "contract" | "positions" | "revenue">("overview");
+//   const [showAddModal, setShowAddModal] = useState(false);
+
+//   useEffect(() => {
+//     Promise.all([
+//       crmService.fetchClients(),
+//       crmService.fetchPositionPerformance(),
+//       crmService.fetchRevenue(),
+//     ])
+//       .then(([clientsRes, perfRes, revenueRes]) => {
+//         setClients(clientsRes.data);
+//         setPositionPerformanceData(perfRes.data);
+//         setRevenueData(revenueRes.data);
+//       })
+//       .catch((err) => console.error("Failed to load clients:", err))
+//       .finally(() => setLoading(false));
+//   }, []);
+
+//   const filteredClients = useMemo(() => {
+//     return clients.filter((c) => {
+//       const matchSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) || c.industry.toLowerCase().includes(searchTerm.toLowerCase());
+//       return matchSearch;
+//     });
+//   }, [clients, searchTerm]);
+
+//   if (selectedClient) {
+//     const c = selectedClient;
+//     const tabs: { key: typeof detailTab; label: string }[] = [
+//       { key: "overview", label: "Overview" },
+//       { key: "contacts", label: "Contacts" },
+//       { key: "contract", label: "Contract" },
+//       { key: "positions", label: "Positions" },
+//       { key: "revenue", label: "Revenue" },
+//     ];
+
+//     // Get positions for this client
+//     const clientPositions = positionPerformanceData.filter((p) => p.client === c.name);
+
+//     // Get revenue for this client
+//     const clientRevenue = revenueData.find((r) => r.client === c.name);
+
+//     return (
+//       <div className="space-y-6">
+//         <button
+//           onClick={() => { setSelectedClient(null); setDetailTab("overview"); }}
+//           className="px-3 py-1.5 text-xs font-medium rounded-md border border-gray-200 text-gray-600 hover:bg-gray-50 flex items-center gap-1"
+//         >
+//           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+//           Back to Client List
+//         </button>
+
+//         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+//           <div className="p-6 border-b border-gray-200">
+//             <div className="flex items-start gap-4">
+//               <div className="w-14 h-14 bg-teal-100 rounded-lg flex items-center justify-center text-teal-700 font-bold text-lg">
+//                 {c.name.split(" ").map((w) => w[0]).join("").slice(0, 3)}
+//               </div>
+//               <div className="flex-1">
+//                 <div className="flex items-center gap-3">
+//                   <h2 className="text-xl font-semibold text-gray-800">{c.name}</h2>
+//                   <span className={`px-3 py-1 text-xs font-medium rounded-full ${getStatusBadgeClass(c.status)}`}>{c.status}</span>
+//                 </div>
+//                 <p className="text-sm text-gray-500 mt-1">{c.industry} &middot; {c.hq} &middot; {c.companySize} employees</p>
+//                 <p className="text-xs text-gray-400 mt-1">{c.website}</p>
+//               </div>
+//               <span className="px-3 py-1 text-xs font-medium rounded-full bg-teal-50 text-teal-700">{c.fundingStage}</span>
+//             </div>
+//           </div>
+
+//           <div className="border-b border-gray-200 px-6">
+//             <div className="flex gap-0">
+//               {tabs.map((t) => (
+//                 <button
+//                   key={t.key}
+//                   onClick={() => setDetailTab(t.key)}
+//                   className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors ${
+//                     detailTab === t.key
+//                       ? "border-teal-600 text-teal-600"
+//                       : "border-transparent text-gray-500 hover:text-gray-700"
+//                   }`}
+//                 >
+//                   {t.label}
+//                 </button>
+//               ))}
+//             </div>
+//           </div>
+
+//           <div className="p-6">
+//             {detailTab === "overview" && (
+//               <div className="space-y-5">
+//                 <div>
+//                   <h4 className="text-sm font-medium text-gray-500 mb-1">USP & Positioning</h4>
+//                   <p className="text-sm text-gray-800">{c.usp}</p>
+//                 </div>
+//                 <div>
+//                   <h4 className="text-sm font-medium text-gray-500 mb-1">Business Description</h4>
+//                   <p className="text-sm text-gray-800">{c.businessDescription}</p>
+//                 </div>
+//                 <div className="grid grid-cols-2 gap-4">
+//                   <div>
+//                     <h4 className="text-sm font-medium text-gray-500 mb-1">Product Lines</h4>
+//                     <p className="text-sm text-gray-800">{c.productLines}</p>
+//                   </div>
+//                   <div>
+//                     <h4 className="text-sm font-medium text-gray-500 mb-1">Investors</h4>
+//                     <p className="text-sm text-gray-800">{c.investors}</p>
+//                   </div>
+//                 </div>
+//               </div>
+//             )}
+
+//             {detailTab === "contacts" && (
+//               <div className="space-y-5">
+//                 <div>
+//                   <h4 className="text-sm font-medium text-gray-500 mb-3">SPOC Recruiters</h4>
+//                   <div className="flex flex-wrap gap-2">
+//                     {c.spocRecruiters.map((recruiter, idx) => (
+//                       <span key={idx} className="px-3 py-1 text-sm bg-teal-50 text-teal-700 rounded-full font-medium">
+//                         {recruiter}
+//                       </span>
+//                     ))}
+//                   </div>
+//                 </div>
+//                 <div className="bg-gray-50 rounded-lg p-4">
+//                   <h4 className="text-sm font-medium text-gray-500 mb-3">Client-side Contact</h4>
+//                   <p className="text-sm font-semibold text-gray-800">{c.clientContact.name}</p>
+//                   <p className="text-xs text-gray-500 mt-1">{c.clientContact.email}</p>
+//                   <p className="text-xs text-gray-500">{c.clientContact.phone}</p>
+//                 </div>
+//               </div>
+//             )}
+
+//             {detailTab === "contract" && (
+//               <div className="space-y-5">
+//                 <div className="grid grid-cols-3 gap-4">
+//                   <div className="bg-gray-50 rounded-lg p-4">
+//                     <h4 className="text-xs font-medium text-gray-400 mb-1">Contract Type</h4>
+//                     <p className="text-sm font-semibold text-gray-800">{c.contractType}</p>
+//                   </div>
+//                   <div className="bg-gray-50 rounded-lg p-4">
+//                     <h4 className="text-xs font-medium text-gray-400 mb-1">Fee Structure</h4>
+//                     <p className="text-sm font-semibold text-gray-800">{c.feeStructure}</p>
+//                   </div>
+//                   <div className="bg-gray-50 rounded-lg p-4">
+//                     <h4 className="text-xs font-medium text-gray-400 mb-1">Contract Period</h4>
+//                     <p className="text-sm font-semibold text-gray-800">{c.contractStart} to {c.contractEnd}</p>
+//                   </div>
+//                 </div>
+//               </div>
+//             )}
+
+//             {detailTab === "positions" && (
+//               <div className="space-y-4">
+//                 {clientPositions.length === 0 ? (
+//                   <p className="text-sm text-gray-500">No positions data available.</p>
+//                 ) : (
+//                   <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+//                     <div className="overflow-x-auto">
+//                       <table className="w-full text-sm">
+//                         <thead>
+//                           <tr className="border-b border-gray-200 bg-gray-50">
+//                             <th className="text-left py-2 px-4 text-xs font-semibold text-gray-600">Position</th>
+//                             <th className="text-center py-2 px-4 text-xs font-semibold text-gray-600">Submitted</th>
+//                             <th className="text-center py-2 px-4 text-xs font-semibold text-gray-600">Pipeline</th>
+//                             <th className="text-center py-2 px-4 text-xs font-semibold text-gray-600">Offered</th>
+//                             <th className="text-center py-2 px-4 text-xs font-semibold text-gray-600">Joined</th>
+//                             <th className="text-center py-2 px-4 text-xs font-semibold text-gray-600">Fill Rate</th>
+//                             <th className="text-left py-2 px-4 text-xs font-semibold text-gray-600">Time to Fill</th>
+//                           </tr>
+//                         </thead>
+//                         <tbody>
+//                           {clientPositions.map((pos, idx) => (
+//                             <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
+//                               <td className="py-2 px-4 text-sm font-medium text-gray-800">{pos.position}</td>
+//                               <td className="py-2 px-4 text-center text-sm text-gray-700">{pos.submitted}</td>
+//                               <td className="py-2 px-4 text-center text-sm text-gray-700">{pos.shortlisted}</td>
+//                               <td className="py-2 px-4 text-center text-sm text-gray-700">{pos.offered}</td>
+//                               <td className="py-2 px-4 text-center text-sm text-gray-700">{pos.joined}</td>
+//                               <td className="py-2 px-4 text-center">
+//                                 <span className={`px-2 py-0.5 text-xs font-semibold rounded ${
+//                                   pos.fillRate === "100%" ? "bg-green-100 text-green-800"
+//                                     : pos.fillRate === "0%" ? "bg-red-100 text-red-800"
+//                                     : "bg-yellow-100 text-yellow-800"
+//                                 }`}>
+//                                   {pos.fillRate}
+//                                 </span>
+//                               </td>
+//                               <td className="py-2 px-4 text-xs text-gray-500">{pos.timeToFill}</td>
+//                             </tr>
+//                           ))}
+//                         </tbody>
+//                       </table>
+//                     </div>
+//                   </div>
+//                 )}
+//               </div>
+//             )}
+
+//             {detailTab === "revenue" && (
+//               <div className="space-y-6">
+//                 {!clientRevenue ? (
+//                   <p className="text-sm text-gray-500">No revenue data available for this client.</p>
+//                 ) : (
+//                   <>
+//                     {/* Revenue Summary Cards */}
+//                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+//                       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+//                         <p className="text-xs text-gray-500 mb-1">Billed Amount</p>
+//                         <p className="text-2xl font-bold text-gray-800">{formatINR(clientRevenue.billedAmount)}</p>
+//                         <p className="text-xs text-gray-400 mt-1">Total revenue billed</p>
+//                       </div>
+//                       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+//                         <p className="text-xs text-gray-500 mb-1">Outstanding Receivables</p>
+//                         <p className="text-2xl font-bold text-red-600">{formatINR(clientRevenue.outstanding)}</p>
+//                         <p className="text-xs text-gray-400 mt-1">{((clientRevenue.outstanding / clientRevenue.billedAmount) * 100).toFixed(1)}% of billed</p>
+//                       </div>
+//                       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+//                         <p className="text-xs text-gray-500 mb-1">Avg Fee / Placement</p>
+//                         <p className="text-2xl font-bold text-gray-800">
+//                           {clientRevenue.placementsThisPeriod > 0
+//                             ? formatINR(Math.round(clientRevenue.billedAmount / clientRevenue.placementsThisPeriod))
+//                             : formatINR(0)
+//                           }
+//                         </p>
+//                         <p className="text-xs text-gray-400 mt-1">{clientRevenue.placementsThisPeriod} placements</p>
+//                       </div>
+//                       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+//                         <p className="text-xs text-gray-500 mb-1">Collected</p>
+//                         <p className="text-2xl font-bold text-green-700">
+//                           {formatINR(clientRevenue.billedAmount - clientRevenue.outstanding)}
+//                         </p>
+//                         <p className="text-xs text-green-600 mt-1">
+//                           {((((clientRevenue.billedAmount - clientRevenue.outstanding) / clientRevenue.billedAmount) * 100) || 0).toFixed(1)}% collected
+//                         </p>
+//                       </div>
+//                     </div>
+
+//                     {/* Additional Details */}
+//                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
+//                       <div className="grid grid-cols-3 gap-4">
+//                         <div>
+//                           <h4 className="text-sm font-medium text-gray-500 mb-2">Fee Type</h4>
+//                           <p className="text-sm font-semibold text-gray-800">{clientRevenue.feeType}</p>
+//                         </div>
+//                         <div>
+//                           <h4 className="text-sm font-medium text-gray-500 mb-2">Invoice Status</h4>
+//                           <span className={`px-3 py-1 text-xs font-medium rounded ${getInvoiceBadgeClass(clientRevenue.invoiceStatus)}`}>
+//                             {clientRevenue.invoiceStatus}
+//                           </span>
+//                         </div>
+//                         <div>
+//                           <h4 className="text-sm font-medium text-gray-500 mb-2">Payment Date</h4>
+//                           <p className="text-sm font-semibold text-gray-800">{clientRevenue.paymentDate}</p>
+//                         </div>
+//                       </div>
+//                     </div>
+//                   </>
+//                 )}
+//               </div>
+//             )}
+//           </div>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="space-y-6">
+//       <div className="flex items-center justify-between">
+//         <h3 className="text-lg font-semibold text-gray-800">Client Directory</h3>
+//         <button
+//           onClick={() => setShowAddModal(true)}
+//           className="px-4 py-2 text-xs font-semibold rounded-md bg-teal-600 text-white hover:bg-teal-700"
+//         >
+//           + Add Client
+//         </button>
+//       </div>
+
+//       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+//         <div className="flex flex-wrap gap-3">
+//           <input
+//             type="text"
+//             placeholder="Search clients by name or industry..."
+//             value={searchTerm}
+//             onChange={(e) => setSearchTerm(e.target.value)}
+//             className="flex-1 min-w-[300px] h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
+//           />
+//         </div>
+//       </div>
+
+//       {/* ── TABLE LAYOUT FOR CLIENTS ── */}
+//       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+//         <div className="overflow-x-auto">
+//           <table className="w-full">
+//             <thead>
+//               <tr className="border-b border-gray-200 bg-gray-50">
+//                 <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600">Client Name</th>
+//                 <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600">Industry</th>
+//                 <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600">HQ</th>
+//                 <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600">Contract Type</th>
+//                 <th className="text-center py-3 px-4 text-xs font-semibold text-gray-600">Positions</th>
+//                 <th className="text-center py-3 px-4 text-xs font-semibold text-gray-600">Placed</th>
+//                 <th className="text-center py-3 px-4 text-xs font-semibold text-gray-600">Active</th>
+//                 <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600">SPOC</th>
+//                 <th className="text-center py-3 px-4 text-xs font-semibold text-gray-600">Status</th>
+//                 <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600">Action</th>
+//               </tr>
+//             </thead>
+//             <tbody>
+//               {filteredClients.map((client) => (
+//                 <tr key={client.id} className="border-b border-gray-100 hover:bg-gray-50">
+//                   <td className="py-3 px-4 text-sm font-medium text-gray-800">{client.name}</td>
+//                   <td className="py-3 px-4 text-sm text-gray-700">{client.industry}</td>
+//                   <td className="py-3 px-4 text-sm text-gray-700">{client.hq}</td>
+//                   <td className="py-3 px-4 text-sm text-gray-700">{client.contractType}</td>
+//                   <td className="py-3 px-4 text-center text-sm text-gray-700">{client.totalPositions}</td>
+//                   <td className="py-3 px-4 text-center text-sm font-semibold text-green-700">{client.placements}</td>
+//                   <td className="py-3 px-4 text-center text-sm font-semibold text-blue-700">{client.activePositions}</td>
+//                   <td className="py-3 px-4 text-sm text-gray-700">{client.spocRecruiters.join(", ")}</td>
+//                   <td className="py-3 px-4 text-center">
+//                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadgeClass(client.status)}`}>
+//                       {client.status}
+//                     </span>
+//                   </td>
+//                   <td className="py-3 px-4 text-center">
+//                     <button
+//                       onClick={() => setSelectedClient(client)}
+//                       className="px-3 py-1 text-xs font-medium rounded-md bg-teal-50 text-teal-700 hover:bg-teal-100"
+//                     >
+//                       View
+//                     </button>
+//                   </td>
+//                 </tr>
+//               ))}
+//             </tbody>
+//           </table>
+//         </div>
+//         {loading && (
+//           <div className="p-8 text-center">
+//             <p className="text-sm text-gray-500">Loading clients...</p>
+//           </div>
+//         )}
+//         {!loading && filteredClients.length === 0 && (
+//           <div className="p-8 text-center">
+//             <p className="text-sm text-gray-500">No clients match your search.</p>
+//           </div>
+//         )}
+//       </div>
+
+//       <AddClientModal
+//         open={showAddModal}
+//         onClose={() => setShowAddModal(false)}
+//         onCreated={(client) => setClients((prev) => [...prev, client])}
+//       />
+//     </div>
+//   );
+// }
+
+// // ---------- 2. Offer Dashboard ----------
+
+// function OfferDashboard() {
+//   const [searchTerm, setSearchTerm] = useState("");
+//   const [filterStatus, setFilterStatus] = useState("All");
+//   const [filterClient, setFilterClient] = useState("All");
+//   const [offersData, setOffersData] = useState<Offer[]>([]);
+//   const [loading, setLoading] = useState(true);
+
+//   useEffect(() => {
+//     crmService
+//       .fetchOffers()
+//       .then((res) => setOffersData(res.data))
+//       .catch((err) => console.error("Failed to load offers:", err))
+//       .finally(() => setLoading(false));
+//   }, []);
+
+//   const offerStatuses = ["All", "Extended", "Negotiation", "Accepted", "Declined", "Revoked", "Ghosted"];
+//   const clients = ["All", ...Array.from(new Set(offersData.map((o) => o.client)))];
+
+//   const totalOffers = offersData.length;
+//   const accepted = offersData.filter((o) => o.status === "Accepted").length;
+//   const declined = offersData.filter((o) => o.status === "Declined").length;
+//   const pending = offersData.filter((o) => o.status === "Extended" || o.status === "Negotiation").length;
+//   const joinConfirmed = offersData.filter((o) => o.joiningConfirmed).length;
+//   const offerToJoinRate = totalOffers > 0 ? ((joinConfirmed / totalOffers) * 100).toFixed(0) : "0";
+
+//   const filtered = useMemo(() => {
+//     return offersData.filter((o) => {
+//       const matchSearch = o.candidate.toLowerCase().includes(searchTerm.toLowerCase()) || o.position.toLowerCase().includes(searchTerm.toLowerCase());
+//       const matchStatus = filterStatus === "All" || o.status === filterStatus;
+//       const matchClient = filterClient === "All" || o.client === filterClient;
+//       return matchSearch && matchStatus && matchClient;
+//     });
+//   }, [offersData, searchTerm, filterStatus, filterClient]);
+
+//   return (
+//     <div className="space-y-6">
+//       <h3 className="text-lg font-semibold text-gray-800">Offer Dashboard</h3>
+
+//       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+//         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
+//           <p className="text-2xl font-bold text-gray-800">{totalOffers}</p>
+//           <p className="text-xs text-gray-500 mt-1">Total Offers</p>
+//         </div>
+//         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
+//           <p className="text-2xl font-bold text-green-700">{accepted}</p>
+//           <p className="text-xs text-gray-500 mt-1">Accepted</p>
+//         </div>
+//         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
+//           <p className="text-2xl font-bold text-red-600">{declined}</p>
+//           <p className="text-xs text-gray-500 mt-1">Declined</p>
+//         </div>
+//         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
+//           <p className="text-2xl font-bold text-yellow-600">{pending}</p>
+//           <p className="text-xs text-gray-500 mt-1">Pending</p>
+//         </div>
+//         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
+//           <p className="text-2xl font-bold text-teal-600">{offerToJoinRate}%</p>
+//           <p className="text-xs text-gray-500 mt-1">Offer-to-Join</p>
+//         </div>
+//       </div>
+
+//       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+//         <div className="flex flex-wrap gap-3">
+//           <input
+//             type="text"
+//             placeholder="Search candidate or position..."
+//             value={searchTerm}
+//             onChange={(e) => setSearchTerm(e.target.value)}
+//             className="flex-1 min-w-[200px] h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
+//           />
+//           <FilterSelect
+//             ariaLabel="Filter by offer status"
+//             className="w-full sm:w-48"
+//             value={filterStatus}
+//             onChange={setFilterStatus}
+//             options={offerStatuses.map((s) => ({ value: s, label: s === "All" ? "All Statuses" : s }))}
+//           />
+//           <FilterSelect
+//             searchable
+//             searchPlaceholder="Search clients..."
+//             ariaLabel="Filter by client"
+//             className="w-full sm:w-48"
+//             value={filterClient}
+//             onChange={setFilterClient}
+//             options={clients.map((c) => ({ value: c, label: c === "All" ? "All Clients" : c }))}
+//           />
+//         </div>
+//       </div>
+
+//       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+//         <div className="overflow-x-auto">
+//           <table className="w-full">
+//             <thead>
+//               <tr className="border-b border-gray-200">
+//                 <th className="text-left py-2 px-4 text-sm font-medium text-gray-600">Candidate</th>
+//                 <th className="text-left py-2 px-4 text-sm font-medium text-gray-600">Position</th>
+//                 <th className="text-left py-2 px-4 text-sm font-medium text-gray-600">Client</th>
+//                 <th className="text-left py-2 px-4 text-sm font-medium text-gray-600">Offer Date</th>
+//                 <th className="text-right py-2 px-4 text-sm font-medium text-gray-600">Offered CTC</th>
+//                 <th className="text-right py-2 px-4 text-sm font-medium text-gray-600">Current CTC</th>
+//                 <th className="text-center py-2 px-4 text-sm font-medium text-gray-600">Hike %</th>
+//                 <th className="text-left py-2 px-4 text-sm font-medium text-gray-600">Notice</th>
+//                 <th className="text-left py-2 px-4 text-sm font-medium text-gray-600">Exp. Joining</th>
+//                 <th className="text-center py-2 px-4 text-sm font-medium text-gray-600">Status</th>
+//                 <th className="text-center py-2 px-4 text-sm font-medium text-gray-600">Confirmed</th>
+//               </tr>
+//             </thead>
+//             <tbody>
+//               {filtered.map((offer) => (
+//                 <tr key={offer.id} className="border-b border-gray-100 hover:bg-gray-50">
+//                   <td className="py-3 px-4 text-sm font-medium text-gray-800">{offer.candidate}</td>
+//                   <td className="py-3 px-4 text-sm text-gray-700">{offer.position}</td>
+//                   <td className="py-3 px-4 text-sm text-gray-700">{offer.client.length > 20 ? offer.client.slice(0, 20) + "..." : offer.client}</td>
+//                   <td className="py-3 px-4 text-xs text-gray-500">{offer.offerDate}</td>
+//                   <td className="py-3 px-4 text-right text-sm font-medium text-gray-800">{formatINR(offer.offeredCTC)}</td>
+//                   <td className="py-3 px-4 text-right text-sm text-gray-500">{formatINR(offer.currentCTC)}</td>
+//                   <td className="py-3 px-4 text-center">
+//                     <span className="px-2 py-0.5 text-xs font-semibold rounded bg-green-50 text-green-700">{offer.hikePercent}%</span>
+//                   </td>
+//                   <td className="py-3 px-4 text-xs text-gray-500">{offer.noticePeriod}</td>
+//                   <td className="py-3 px-4 text-xs text-gray-500">{offer.expectedJoining}</td>
+//                   <td className="py-3 px-4 text-center">
+//                     <span className={`px-2 py-1 text-xs font-medium rounded ${getOfferStatusBadgeClass(offer.status)}`}>
+//                       {offer.status}
+//                     </span>
+//                   </td>
+//                   <td className="py-3 px-4 text-center">
+//                     {offer.joiningConfirmed ? (
+//                       <span className="text-green-600 font-bold text-sm">Yes</span>
+//                     ) : (
+//                       <span className="text-gray-400 text-sm">--</span>
+//                     )}
+//                   </td>
+//                 </tr>
+//               ))}
+//             </tbody>
+//           </table>
+//         </div>
+//         {loading && (
+//           <div className="p-8 text-center">
+//             <p className="text-sm text-gray-500">Loading offers...</p>
+//           </div>
+//         )}
+//         {!loading && filtered.length === 0 && (
+//           <div className="p-8 text-center">
+//             <p className="text-sm text-gray-500">No offers match your filters.</p>
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// // ─── Main Component ──────────────────────────────────────────────────────────
+
+// export default function CRMModule() {
+//   const location = useLocation();
+
+//   const path = location.pathname.replace(/\/+$/, "");
+//   const section = path === "/crm/offers" ? "offers" : "clients";
+
+//   return (
+//     <div className="min-h-screen bg-gray-50">
+//       <Header />
+//       <div className="p-6 space-y-6 max-w-7xl mx-auto">
+//         <div className="flex items-center justify-between">
+//           <div>
+//             <h1 className="text-2xl font-bold text-gray-800">CRM Module</h1>
+//             <p className="text-sm text-gray-500 mt-1">TrueKarma Recruitment &mdash; Client Relationship Management</p>
+//           </div>
+//         </div>
+
+//         {section === "clients" && <ClientDetails />}
+//         {section === "offers" && <OfferDashboard />}
+//       </div>
+//     </div>
+//   );
+// }
+
+
+
+
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import Header from "../components/Header";
 import AddClientModal from "../components/clients/AddClientModal";
+import EditClientModal from "../components/clients/EditClientModal";
 import FilterSelect from "../components/FilterSelect";
-import { crmService } from "../services/crmService";
+import {
+  crmService,
+  type CrmOfferClient,
+  type CrmOfferSummary,
+} from "../services/crmService";
 import type {
   Client,
   RevenueRow,
@@ -1395,6 +2006,10 @@ function formatINR(amount: number): string {
   }
   return new Intl.NumberFormat("en-IN").format(amount);
 }
+
+// Show "--" for missing or placeholder values
+const orDash = (value: string | null | undefined): string =>
+  value && value.trim() && value !== "--" ? value : "--";
 
 function getInvoiceBadgeClass(status: string): string {
   switch (status) {
@@ -1427,6 +2042,8 @@ function getStatusBadgeClass(status: string): string {
   }
 }
 
+const CLIENT_STATUSES = ["Active", "Inactive", "New"];
+
 // ─── Sub-Components ──────────────────────────────────────────────────────────
 
 // ---------- 1. Client Details ----------
@@ -1436,32 +2053,108 @@ function ClientDetails() {
   const [positionPerformanceData, setPositionPerformanceData] = useState<PositionPerformance[]>([]);
   const [revenueData, setRevenueData] = useState<RevenueRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterIndustry, setFilterIndustry] = useState("All");
+  const [filterStatus, setFilterStatus] = useState("All");
   const [detailTab, setDetailTab] = useState<"overview" | "contacts" | "contract" | "positions" | "revenue">("overview");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  // The client currently open; guards against a late detail response
+  const openClientIdRef = useRef<string | null>(null);
+
+  const loadClients = () => {
+    setLoading(true);
+    setLoadError("");
+    crmService
+      .fetchClients()
+      .then((res) => {
+        if (res.success) setClients(res.data);
+        else setLoadError(res.message || "Could not load clients.");
+      })
+      .catch((err) => {
+        console.error("Failed to load clients:", err);
+        setLoadError("Could not load clients. Try again.");
+      })
+      .finally(() => setLoading(false));
+  };
 
   useEffect(() => {
-    Promise.all([
-      crmService.fetchClients(),
-      crmService.fetchPositionPerformance(),
-      crmService.fetchRevenue(),
-    ])
-      .then(([clientsRes, perfRes, revenueRes]) => {
-        setClients(clientsRes.data);
+    loadClients();
+
+    // Still mock data until these APIs are shared
+    Promise.all([crmService.fetchPositionPerformance(), crmService.fetchRevenue()])
+      .then(([perfRes, revenueRes]) => {
         setPositionPerformanceData(perfRes.data);
         setRevenueData(revenueRes.data);
       })
-      .catch((err) => console.error("Failed to load clients:", err))
-      .finally(() => setLoading(false));
+      .catch((err) => console.error("Failed to load positions/revenue:", err));
   }, []);
+
+  const industryOptions = useMemo(() => {
+    const industries = Array.from(new Set(clients.map((c) => c.industry))).sort((a, b) => {
+      if (a === "--") return 1;
+      if (b === "--") return -1;
+      return a.localeCompare(b);
+    });
+    return ["All", ...industries];
+  }, [clients]);
+
+  const statusOptions = useMemo(() => {
+    const extra = Array.from(new Set(clients.map((c) => c.status))).filter((s) => !CLIENT_STATUSES.includes(s));
+    return ["All", ...CLIENT_STATUSES, ...extra];
+  }, [clients]);
 
   const filteredClients = useMemo(() => {
     return clients.filter((c) => {
       const matchSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) || c.industry.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchSearch;
+      const matchIndustry = filterIndustry === "All" || c.industry === filterIndustry;
+      const matchStatus = filterStatus === "All" || c.status === filterStatus;
+      return matchSearch && matchIndustry && matchStatus;
     });
-  }, [clients, searchTerm]);
+  }, [clients, searchTerm, filterIndustry, filterStatus]);
+
+  const hasActiveFilters = !!searchTerm || filterIndustry !== "All" || filterStatus !== "All";
+
+  // Open from list data straight away, then fill in from the single-client API
+  const openClient = (client: Client) => {
+    openClientIdRef.current = client.id;
+    setSelectedClient(client);
+    setDetailTab("overview");
+
+    crmService
+      .fetchClientById(client.id)
+      .then((res) => {
+        if (openClientIdRef.current !== client.id || !res.success || !res.data) return;
+        const detail = res.data;
+        // Keep list values where the detail response has nothing
+        const filled = Object.fromEntries(
+          Object.entries(detail).filter(([, v]) =>
+            v !== "" && v !== "--" && v !== 0 && !(Array.isArray(v) && v.length === 0)
+          )
+        ) as Partial<Client>;
+        const contact = {
+          name: detail.clientContact.name || client.clientContact.name,
+          email: detail.clientContact.email || client.clientContact.email,
+          phone: detail.clientContact.phone || client.clientContact.phone,
+        };
+        setSelectedClient((prev) => (prev && prev.id === client.id ? { ...prev, ...filled, clientContact: contact } : prev));
+      })
+      .catch((err) => console.error("Failed to load client details:", err));
+  };
+
+  const closeClient = () => {
+    openClientIdRef.current = null;
+    setSelectedClient(null);
+    setDetailTab("overview");
+  };
+
+  const handleClientSaved = (updated: Client) => {
+    setClients((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+    setSelectedClient((prev) => (prev && prev.id === updated.id ? updated : prev));
+  };
 
   if (selectedClient) {
     const c = selectedClient;
@@ -1479,10 +2172,20 @@ function ClientDetails() {
     // Get revenue for this client
     const clientRevenue = revenueData.find((r) => r.client === c.name);
 
+    const subtitle = [
+      c.industry !== "--" ? c.industry : "",
+      c.hq !== "--" ? c.hq : "",
+      c.companySize ? `${c.companySize} employees` : "",
+    ].filter(Boolean).join(" · ");
+
+    const contractPeriod = c.contractStart || c.contractEnd
+      ? `${orDash(c.contractStart)} to ${orDash(c.contractEnd)}`
+      : "--";
+
     return (
       <div className="space-y-6">
         <button
-          onClick={() => { setSelectedClient(null); setDetailTab("overview"); }}
+          onClick={closeClient}
           className="px-3 py-1.5 text-xs font-medium rounded-md border border-gray-200 text-gray-600 hover:bg-gray-50 flex items-center gap-1"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
@@ -1492,28 +2195,38 @@ function ClientDetails() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-start gap-4">
-              <div className="w-14 h-14 bg-teal-100 rounded-lg flex items-center justify-center text-teal-700 font-bold text-lg">
+              <div className="w-14 h-14 bg-teal-100 rounded-lg flex items-center justify-center text-teal-700 font-bold text-lg shrink-0">
                 {c.name.split(" ").map((w) => w[0]).join("").slice(0, 3)}
               </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 flex-wrap">
                   <h2 className="text-xl font-semibold text-gray-800">{c.name}</h2>
                   <span className={`px-3 py-1 text-xs font-medium rounded-full ${getStatusBadgeClass(c.status)}`}>{c.status}</span>
                 </div>
-                <p className="text-sm text-gray-500 mt-1">{c.industry} &middot; {c.hq} &middot; {c.companySize} employees</p>
-                <p className="text-xs text-gray-400 mt-1">{c.website}</p>
+                {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
+                {c.website && <p className="text-xs text-gray-400 mt-1 break-all">{c.website}</p>}
               </div>
-              <span className="px-3 py-1 text-xs font-medium rounded-full bg-teal-50 text-teal-700">{c.fundingStage}</span>
+              <div className="flex items-center gap-2 shrink-0">
+                {c.fundingStage && (
+                  <span className="px-3 py-1 text-xs font-medium rounded-full bg-teal-50 text-teal-700">{c.fundingStage}</span>
+                )}
+                <button
+                  onClick={() => setShowEditModal(true)}
+                  className="px-3 py-1.5 text-xs font-medium rounded-md border border-teal-300 text-teal-700 hover:bg-teal-50"
+                >
+                  Edit
+                </button>
+              </div>
             </div>
           </div>
 
-          <div className="border-b border-gray-200 px-6">
+          <div className="border-b border-gray-200 px-6 overflow-x-auto">
             <div className="flex gap-0">
               {tabs.map((t) => (
                 <button
                   key={t.key}
                   onClick={() => setDetailTab(t.key)}
-                  className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors ${
+                  className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                     detailTab === t.key
                       ? "border-teal-600 text-teal-600"
                       : "border-transparent text-gray-500 hover:text-gray-700"
@@ -1530,20 +2243,20 @@ function ClientDetails() {
               <div className="space-y-5">
                 <div>
                   <h4 className="text-sm font-medium text-gray-500 mb-1">USP & Positioning</h4>
-                  <p className="text-sm text-gray-800">{c.usp}</p>
+                  <p className="text-sm text-gray-800">{orDash(c.usp)}</p>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-gray-500 mb-1">Business Description</h4>
-                  <p className="text-sm text-gray-800">{c.businessDescription}</p>
+                  <p className="text-sm text-gray-800">{orDash(c.businessDescription)}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <h4 className="text-sm font-medium text-gray-500 mb-1">Product Lines</h4>
-                    <p className="text-sm text-gray-800">{c.productLines}</p>
+                    <p className="text-sm text-gray-800">{orDash(c.productLines)}</p>
                   </div>
                   <div>
                     <h4 className="text-sm font-medium text-gray-500 mb-1">Investors</h4>
-                    <p className="text-sm text-gray-800">{c.investors}</p>
+                    <p className="text-sm text-gray-800">{orDash(c.investors)}</p>
                   </div>
                 </div>
               </div>
@@ -1553,37 +2266,47 @@ function ClientDetails() {
               <div className="space-y-5">
                 <div>
                   <h4 className="text-sm font-medium text-gray-500 mb-3">SPOC Recruiters</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {c.spocRecruiters.map((recruiter, idx) => (
-                      <span key={idx} className="px-3 py-1 text-sm bg-teal-50 text-teal-700 rounded-full font-medium">
-                        {recruiter}
-                      </span>
-                    ))}
-                  </div>
+                  {c.spocRecruiters.length === 0 ? (
+                    <p className="text-sm text-gray-500">No SPOC assigned.</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {c.spocRecruiters.map((recruiter, idx) => (
+                        <span key={idx} className="px-3 py-1 text-sm bg-teal-50 text-teal-700 rounded-full font-medium">
+                          {recruiter}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="bg-gray-50 rounded-lg p-4">
                   <h4 className="text-sm font-medium text-gray-500 mb-3">Client-side Contact</h4>
-                  <p className="text-sm font-semibold text-gray-800">{c.clientContact.name}</p>
-                  <p className="text-xs text-gray-500 mt-1">{c.clientContact.email}</p>
-                  <p className="text-xs text-gray-500">{c.clientContact.phone}</p>
+                  {c.clientContact.name || c.clientContact.email || c.clientContact.phone ? (
+                    <>
+                      <p className="text-sm font-semibold text-gray-800">{orDash(c.clientContact.name)}</p>
+                      {c.clientContact.email && <p className="text-xs text-gray-500 mt-1">{c.clientContact.email}</p>}
+                      {c.clientContact.phone && <p className="text-xs text-gray-500">{c.clientContact.phone}</p>}
+                    </>
+                  ) : (
+                    <p className="text-sm text-gray-500">No contact added.</p>
+                  )}
                 </div>
               </div>
             )}
 
             {detailTab === "contract" && (
               <div className="space-y-5">
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="bg-gray-50 rounded-lg p-4">
                     <h4 className="text-xs font-medium text-gray-400 mb-1">Contract Type</h4>
-                    <p className="text-sm font-semibold text-gray-800">{c.contractType}</p>
+                    <p className="text-sm font-semibold text-gray-800">{orDash(c.contractType)}</p>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-4">
                     <h4 className="text-xs font-medium text-gray-400 mb-1">Fee Structure</h4>
-                    <p className="text-sm font-semibold text-gray-800">{c.feeStructure}</p>
+                    <p className="text-sm font-semibold text-gray-800">{orDash(c.feeStructure)}</p>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-4">
                     <h4 className="text-xs font-medium text-gray-400 mb-1">Contract Period</h4>
-                    <p className="text-sm font-semibold text-gray-800">{c.contractStart} to {c.contractEnd}</p>
+                    <p className="text-sm font-semibold text-gray-800">{contractPeriod}</p>
                   </div>
                 </div>
               </div>
@@ -1700,6 +2423,13 @@ function ClientDetails() {
             )}
           </div>
         </div>
+
+        <EditClientModal
+          open={showEditModal}
+          client={selectedClient}
+          onClose={() => setShowEditModal(false)}
+          onSaved={handleClientSaved}
+        />
       </div>
     );
   }
@@ -1723,10 +2453,43 @@ function ClientDetails() {
             placeholder="Search clients by name or industry..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 min-w-[300px] h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            className="flex-1 min-w-[240px] h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
+          />
+          <FilterSelect
+            searchable
+            searchPlaceholder="Search industries..."
+            ariaLabel="Filter by industry"
+            className="w-full sm:w-56"
+            value={filterIndustry}
+            onChange={setFilterIndustry}
+            options={industryOptions.map((i) => ({
+              value: i,
+              label: i === "All" ? "All Industries" : i === "--" ? "Not specified" : i,
+            }))}
+          />
+          <FilterSelect
+            ariaLabel="Filter by client status"
+            className="w-full sm:w-44"
+            value={filterStatus}
+            onChange={setFilterStatus}
+            options={statusOptions.map((s) => ({ value: s, label: s === "All" ? "All Statuses" : s }))}
           />
         </div>
+        {!loading && (
+          <p className="text-xs text-gray-500 mt-3">
+            {hasActiveFilters
+              ? `${filteredClients.length} of ${clients.length} clients`
+              : `${clients.length} clients`}
+          </p>
+        )}
       </div>
+
+      {loadError && (
+        <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg border border-red-200 bg-red-50 text-sm text-red-700">
+          <span>{loadError}</span>
+          <button onClick={loadClients} className="text-xs font-semibold underline">Retry</button>
+        </div>
+      )}
 
       {/* ── TABLE LAYOUT FOR CLIENTS ── */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -1737,7 +2500,7 @@ function ClientDetails() {
                 <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600">Client Name</th>
                 <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600">Industry</th>
                 <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600">HQ</th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600">Contract Type</th>
+                {/* Contract Type column hidden until the clients API returns it */}
                 <th className="text-center py-3 px-4 text-xs font-semibold text-gray-600">Positions</th>
                 <th className="text-center py-3 px-4 text-xs font-semibold text-gray-600">Placed</th>
                 <th className="text-center py-3 px-4 text-xs font-semibold text-gray-600">Active</th>
@@ -1750,13 +2513,12 @@ function ClientDetails() {
               {filteredClients.map((client) => (
                 <tr key={client.id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="py-3 px-4 text-sm font-medium text-gray-800">{client.name}</td>
-                  <td className="py-3 px-4 text-sm text-gray-700">{client.industry}</td>
+                  <td className="py-3 px-4 text-sm text-gray-700 max-w-[220px] truncate" title={client.industry}>{client.industry}</td>
                   <td className="py-3 px-4 text-sm text-gray-700">{client.hq}</td>
-                  <td className="py-3 px-4 text-sm text-gray-700">{client.contractType}</td>
                   <td className="py-3 px-4 text-center text-sm text-gray-700">{client.totalPositions}</td>
                   <td className="py-3 px-4 text-center text-sm font-semibold text-green-700">{client.placements}</td>
                   <td className="py-3 px-4 text-center text-sm font-semibold text-blue-700">{client.activePositions}</td>
-                  <td className="py-3 px-4 text-sm text-gray-700">{client.spocRecruiters.join(", ")}</td>
+                  <td className="py-3 px-4 text-sm text-gray-700">{client.spocRecruiters.join(", ") || "--"}</td>
                   <td className="py-3 px-4 text-center">
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadgeClass(client.status)}`}>
                       {client.status}
@@ -1764,7 +2526,7 @@ function ClientDetails() {
                   </td>
                   <td className="py-3 px-4 text-center">
                     <button
-                      onClick={() => setSelectedClient(client)}
+                      onClick={() => openClient(client)}
                       className="px-3 py-1 text-xs font-medium rounded-md bg-teal-50 text-teal-700 hover:bg-teal-100"
                     >
                       View
@@ -1780,7 +2542,7 @@ function ClientDetails() {
             <p className="text-sm text-gray-500">Loading clients...</p>
           </div>
         )}
-        {!loading && filteredClients.length === 0 && (
+        {!loading && !loadError && filteredClients.length === 0 && (
           <div className="p-8 text-center">
             <p className="text-sm text-gray-500">No clients match your search.</p>
           </div>
@@ -1798,39 +2560,106 @@ function ClientDetails() {
 
 // ---------- 2. Offer Dashboard ----------
 
+const OFFERS_PAGE_SIZE = 20;
+const DEFAULT_OFFER_STATUSES = ["Extended", "Negotiation", "Accepted", "Declined", "Revoked", "Ghosted"];
+
 function OfferDashboard() {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [searchTerm, setSearchTerm] = useState(""); // debounced
   const [filterStatus, setFilterStatus] = useState("All");
   const [filterClient, setFilterClient] = useState("All");
+  const [page, setPage] = useState(1);
+
   const [offersData, setOffersData] = useState<Offer[]>([]);
+  const [summary, setSummary] = useState<CrmOfferSummary | null>(null);
+  const [clientOptions, setClientOptions] = useState<CrmOfferClient[]>([]);
+  const [statuses, setStatuses] = useState<string[]>(DEFAULT_OFFER_STATUSES);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  // Ignore responses from older requests when filters change quickly
+  const requestIdRef = useRef(0);
+
+  const loadOffers = async () => {
+    const requestId = ++requestIdRef.current;
+    setLoading(true);
+    setError("");
+    try {
+      const res = await crmService.fetchOffers({
+        page,
+        limit: OFFERS_PAGE_SIZE,
+        status: filterStatus === "All" ? "all" : filterStatus,
+        clientId: filterClient === "All" ? undefined : filterClient,
+        search: searchTerm,
+      });
+      if (requestId !== requestIdRef.current) return;
+      if (!res.success) {
+        setError(res.message || "Could not load offers.");
+        return;
+      }
+      setOffersData(res.data.offers);
+      setSummary(res.data.summary || null);
+      if (res.data.statuses?.length) setStatuses(res.data.statuses);
+      // Merge so the client filter keeps its options when a client is selected
+      if (res.data.clients?.length) {
+        setClientOptions((prev) => {
+          const byId = new Map(prev.map((c) => [String(c.id), c]));
+          res.data.clients.forEach((c) => byId.set(String(c.id), c));
+          return Array.from(byId.values()).sort((a, b) => a.name.localeCompare(b.name));
+        });
+      }
+      setTotal(res.data.pagination?.total || 0);
+      setTotalPages(Math.max(res.data.pagination?.totalPages || 1, 1));
+    } catch (err) {
+      if (requestId !== requestIdRef.current) return;
+      console.error("Failed to load offers:", err);
+      setError("Could not load offers. Try again.");
+    } finally {
+      if (requestId === requestIdRef.current) setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    crmService
-      .fetchOffers()
-      .then((res) => setOffersData(res.data))
-      .catch((err) => console.error("Failed to load offers:", err))
-      .finally(() => setLoading(false));
-  }, []);
+    loadOffers();
+  }, [page, searchTerm, filterStatus, filterClient]);
 
-  const offerStatuses = ["All", "Extended", "Negotiation", "Accepted", "Declined", "Revoked", "Ghosted"];
-  const clients = ["All", ...Array.from(new Set(offersData.map((o) => o.client)))];
+  // Debounce search so we don't call the API on every keystroke
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchTerm(searchInput.trim());
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
-  const totalOffers = offersData.length;
-  const accepted = offersData.filter((o) => o.status === "Accepted").length;
-  const declined = offersData.filter((o) => o.status === "Declined").length;
-  const pending = offersData.filter((o) => o.status === "Extended" || o.status === "Negotiation").length;
-  const joinConfirmed = offersData.filter((o) => o.joiningConfirmed).length;
-  const offerToJoinRate = totalOffers > 0 ? ((joinConfirmed / totalOffers) * 100).toFixed(0) : "0";
+  const handleStatusChange = async (offer: Offer, newStatus: string) => {
+    if (newStatus === offer.status) return;
+    const previousStatus = offer.status;
 
-  const filtered = useMemo(() => {
-    return offersData.filter((o) => {
-      const matchSearch = o.candidate.toLowerCase().includes(searchTerm.toLowerCase()) || o.position.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchStatus = filterStatus === "All" || o.status === filterStatus;
-      const matchClient = filterClient === "All" || o.client === filterClient;
-      return matchSearch && matchStatus && matchClient;
-    });
-  }, [offersData, searchTerm, filterStatus, filterClient]);
+    // Optimistic update, rolled back on failure
+    setUpdatingId(offer.id);
+    setOffersData((prev) => prev.map((o) => (o.id === offer.id ? { ...o, status: newStatus as Offer["status"] } : o)));
+
+    try {
+      const res = await crmService.updateOfferStatus(offer.id, newStatus);
+      if (!res.success) throw new Error(res.message || "Status update failed");
+      // Refresh KPIs, and drop the row if it no longer matches the status filter
+      loadOffers();
+    } catch (err: any) {
+      console.error("Failed to update offer status:", err);
+      setOffersData((prev) => prev.map((o) => (o.id === offer.id ? { ...o, status: previousStatus } : o)));
+      alert(err?.response?.data?.message || "Could not update the offer status. Try again.");
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const offerStatuses = ["All", ...statuses];
+  const rangeStart = total === 0 ? 0 : (page - 1) * OFFERS_PAGE_SIZE + 1;
+  const rangeEnd = Math.min(page * OFFERS_PAGE_SIZE, total);
 
   return (
     <div className="space-y-6">
@@ -1838,23 +2667,23 @@ function OfferDashboard() {
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
-          <p className="text-2xl font-bold text-gray-800">{totalOffers}</p>
+          <p className="text-2xl font-bold text-gray-800">{summary?.totalOffers ?? "--"}</p>
           <p className="text-xs text-gray-500 mt-1">Total Offers</p>
         </div>
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
-          <p className="text-2xl font-bold text-green-700">{accepted}</p>
+          <p className="text-2xl font-bold text-green-700">{summary?.accepted ?? "--"}</p>
           <p className="text-xs text-gray-500 mt-1">Accepted</p>
         </div>
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
-          <p className="text-2xl font-bold text-red-600">{declined}</p>
+          <p className="text-2xl font-bold text-red-600">{summary?.declined ?? "--"}</p>
           <p className="text-xs text-gray-500 mt-1">Declined</p>
         </div>
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
-          <p className="text-2xl font-bold text-yellow-600">{pending}</p>
+          <p className="text-2xl font-bold text-yellow-600">{summary?.pending ?? "--"}</p>
           <p className="text-xs text-gray-500 mt-1">Pending</p>
         </div>
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
-          <p className="text-2xl font-bold text-teal-600">{offerToJoinRate}%</p>
+          <p className="text-2xl font-bold text-teal-600">{summary ? `${summary.offerToJoin}%` : "--"}</p>
           <p className="text-xs text-gray-500 mt-1">Offer-to-Join</p>
         </div>
       </div>
@@ -1863,16 +2692,16 @@ function OfferDashboard() {
         <div className="flex flex-wrap gap-3">
           <input
             type="text"
-            placeholder="Search candidate or position..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search candidate, position or client..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             className="flex-1 min-w-[200px] h-10 rounded-lg border border-gray-300 px-3 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
           />
           <FilterSelect
             ariaLabel="Filter by offer status"
             className="w-full sm:w-48"
             value={filterStatus}
-            onChange={setFilterStatus}
+            onChange={(v: string) => { setFilterStatus(v); setPage(1); }}
             options={offerStatuses.map((s) => ({ value: s, label: s === "All" ? "All Statuses" : s }))}
           />
           <FilterSelect
@@ -1881,15 +2710,25 @@ function OfferDashboard() {
             ariaLabel="Filter by client"
             className="w-full sm:w-48"
             value={filterClient}
-            onChange={setFilterClient}
-            options={clients.map((c) => ({ value: c, label: c === "All" ? "All Clients" : c }))}
+            onChange={(v: string) => { setFilterClient(v); setPage(1); }}
+            options={[
+              { value: "All", label: "All Clients" },
+              ...clientOptions.map((c) => ({ value: String(c.id), label: c.name })),
+            ]}
           />
         </div>
       </div>
 
+      {error && (
+        <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg border border-red-200 bg-red-50 text-sm text-red-700">
+          <span>{error}</span>
+          <button onClick={loadOffers} className="text-xs font-semibold underline">Retry</button>
+        </div>
+      )}
+
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className={`w-full transition-opacity ${loading && offersData.length ? "opacity-60" : ""}`}>
             <thead>
               <tr className="border-b border-gray-200">
                 <th className="text-left py-2 px-4 text-sm font-medium text-gray-600">Candidate</th>
@@ -1906,23 +2745,35 @@ function OfferDashboard() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((offer) => (
+              {offersData.map((offer) => (
                 <tr key={offer.id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="py-3 px-4 text-sm font-medium text-gray-800">{offer.candidate}</td>
                   <td className="py-3 px-4 text-sm text-gray-700">{offer.position}</td>
-                  <td className="py-3 px-4 text-sm text-gray-700">{offer.client.length > 20 ? offer.client.slice(0, 20) + "..." : offer.client}</td>
-                  <td className="py-3 px-4 text-xs text-gray-500">{offer.offerDate}</td>
-                  <td className="py-3 px-4 text-right text-sm font-medium text-gray-800">{formatINR(offer.offeredCTC)}</td>
-                  <td className="py-3 px-4 text-right text-sm text-gray-500">{formatINR(offer.currentCTC)}</td>
+                  <td className="py-3 px-4 text-sm text-gray-700" title={offer.client}>{offer.client.length > 20 ? offer.client.slice(0, 20) + "..." : offer.client}</td>
+                  <td className="py-3 px-4 text-xs text-gray-500 whitespace-nowrap">{offer.offerDate}</td>
+                  <td className="py-3 px-4 text-right text-sm font-medium text-gray-800">{offer.offeredCTC !== null ? formatINR(offer.offeredCTC) : "--"}</td>
+                  <td className="py-3 px-4 text-right text-sm text-gray-500">{offer.currentCTC !== null ? formatINR(offer.currentCTC) : "--"}</td>
                   <td className="py-3 px-4 text-center">
-                    <span className="px-2 py-0.5 text-xs font-semibold rounded bg-green-50 text-green-700">{offer.hikePercent}%</span>
+                    {offer.hikePercent !== null ? (
+                      <span className="px-2 py-0.5 text-xs font-semibold rounded bg-green-50 text-green-700">{offer.hikePercent}%</span>
+                    ) : (
+                      <span className="text-gray-400 text-sm">--</span>
+                    )}
                   </td>
-                  <td className="py-3 px-4 text-xs text-gray-500">{offer.noticePeriod}</td>
-                  <td className="py-3 px-4 text-xs text-gray-500">{offer.expectedJoining}</td>
+                  <td className="py-3 px-4 text-xs text-gray-500 whitespace-nowrap">{offer.noticePeriod}</td>
+                  <td className="py-3 px-4 text-xs text-gray-500 whitespace-nowrap">{offer.expectedJoining}</td>
                   <td className="py-3 px-4 text-center">
-                    <span className={`px-2 py-1 text-xs font-medium rounded ${getOfferStatusBadgeClass(offer.status)}`}>
-                      {offer.status}
-                    </span>
+                    <select
+                      value={offer.status}
+                      disabled={updatingId === offer.id}
+                      onChange={(e) => handleStatusChange(offer, e.target.value)}
+                      aria-label={`Offer status for ${offer.candidate}`}
+                      className={`px-2 py-1 text-xs font-medium rounded border-0 cursor-pointer disabled:opacity-60 ${getOfferStatusBadgeClass(offer.status)}`}
+                    >
+                      {(statuses.includes(offer.status) ? statuses : [offer.status, ...statuses]).map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
                   </td>
                   <td className="py-3 px-4 text-center">
                     {offer.joiningConfirmed ? (
@@ -1936,17 +2787,40 @@ function OfferDashboard() {
             </tbody>
           </table>
         </div>
-        {loading && (
+        {loading && offersData.length === 0 && (
           <div className="p-8 text-center">
             <p className="text-sm text-gray-500">Loading offers...</p>
           </div>
         )}
-        {!loading && filtered.length === 0 && (
+        {!loading && !error && offersData.length === 0 && (
           <div className="p-8 text-center">
             <p className="text-sm text-gray-500">No offers match your filters.</p>
           </div>
         )}
       </div>
+
+      {total > 0 && (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-gray-600">
+          <span>Showing {rangeStart}–{rangeEnd} of {total}</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(p - 1, 1))}
+              disabled={page <= 1 || loading}
+              className="h-9 px-3 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+            >
+              ← Prev
+            </button>
+            <span className="px-2">Page {page} of {totalPages}</span>
+            <button
+              onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+              disabled={page >= totalPages || loading}
+              className="h-9 px-3 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+            >
+              Next →
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
